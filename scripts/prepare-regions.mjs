@@ -25,5 +25,8 @@ for (const p of provinces) {
     }
   }
 }
-fs.writeFileSync('scripts/regions.sql', sql.join('\n') + '\n');
+const content = sql.join('\n') + '\n';
+if (process.argv.includes('--check')) {
+  if (fs.readFileSync('scripts/regions.sql','utf8') !== content) throw Error('Regenerate SQL dictionary: node scripts/prepare-regions.mjs');
+} else fs.writeFileSync('scripts/regions.sql', content);
 console.log(`Prepared ${count} administrative address records.`);
