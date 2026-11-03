@@ -66,7 +66,7 @@ export function couponListText(draft: CouponDraft, batch?: CreatedCouponBatch | 
       ? `已创建；有效期：${local(batch.starts_at)} 至 ${local(batch.expires_at)}（北京时间）；当前使用状态以后台为准。`
       : `待启用；在后台确认创建成功后生效，有效 ${draft.valid_days} 天。`,
     '下单入口：' + site.url + '/buy',
-    '每码仅优惠一箱家庭装或礼盒装，多箱其余原价；不叠加、不抵运费，树认领不参与。',
+    '每码仅优惠一件零售商品，多箱其余原价；不叠加、不抵运费，树认领不参与。',
     '已付款或退款后不恢复使用次数。请妥善保管清单，仅将对应券码发给领取人。',
     '创建请求：' + draft.request_id,
     '',

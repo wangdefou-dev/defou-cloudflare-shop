@@ -1,3 +1,4 @@
+import site from '../../config/site.json';
 import { sanitizeImage } from './image-sanitize';
 import { adminList } from './admin-lists';
 import { checkoutOrder } from './orders';
@@ -91,7 +92,7 @@ async function lookup(env: Env, request: Request, b: any) {
 }
 async function publicOrder(env: Env, o: any) {
   const shipments = await env.DB.prepare(
-    "SELECT id,qty,status,carrier,tracking_no,expected_date,region_label,card_message FROM shipments WHERE (source='retail' AND source_id=?) OR id=?",
+    "SELECT s.id,s.qty,s.status,s.carrier,s.tracking_no,s.expected_date,s.region_label,s.card_message,p.unit,p.name product_name FROM shipments s LEFT JOIN products p ON p.id=s.product_id WHERE (s.source='retail' AND s.source_id=?) OR s.id=?",
   )
     .bind(o.id, o.shipment_id || '')
     .all();
@@ -100,7 +101,13 @@ async function publicOrder(env: Env, o: any) {
   )
     .bind(o.id)
     .first();
+  const items = await env.DB.prepare(
+    'SELECT i.product_id,i.qty,p.name product_name,p.unit,p.specification FROM order_items i JOIN products p ON p.id=i.product_id WHERE i.order_id=?',
+  )
+    .bind(o.id)
+    .all();
   return {
+    items: items.results,
     order_no: o.order_no,
     type: o.type,
     status: o.status,
@@ -135,8 +142,15 @@ export async function api(request: Request, env: Env): Promise<Response> {
       return json({
         demo,
         sandbox: isSandbox(env, request),
-        sales_open: demo || isSandbox(env, request) || (env.SALES_OPEN === 'true' && isSaleDay()),
-        products: products.results,
+        sales_open:
+          demo ||
+          isSandbox(env, request) ||
+          (env.SALES_OPEN === 'true' && (!site.storefront.seasonal || isSaleDay())),
+        products: products.results.filter(
+          (p: any) =>
+            p.active === 1 &&
+            (demo || site.features.orchard || !['FAMILY', 'GIFT', 'PA', 'FG'].includes(p.sku)),
+        ),
         settings: publicSettings,
         turnstile_site_key: env.TURNSTILE_SITE_KEY || '',
         contact_wechat: env.CONTACT_WECHAT || OWNER_WECHAT,
@@ -191,7 +205,10 @@ export async function api(request: Request, env: Env): Promise<Response> {
     if (path === '/api/coupons/quote' && request.method === 'POST') {
       openSales(env, request);
       const b = z
-        .object({ code: z.string().trim().min(1).max(40), sku: z.enum(['FAMILY', 'GIFT']) })
+        .object({
+          code: z.string().trim().min(1).max(40),
+          sku: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/),
+        })
         .parse(await jsonBody(request));
       const p = await env.DB.prepare('SELECT price,stock,active FROM products WHERE sku=?')
         .bind(b.sku)
@@ -679,8 +696,8 @@ async function adminApi(request: Request, env: Env, path: string) {
     ];
     const labels = [
       '订单号',
-      '箱型',
-      '箱数',
+      '商品规格',
+      '数量',
       '收件人',
       '手机号',
       '省市区',
@@ -756,7 +773,7 @@ async function adminApi(request: Request, env: Env, path: string) {
   if (path === '/api/admin/product') {
     const p = z
       .object({
-        id: z.enum(['FAMILY', 'GIFT', 'PA', 'FG']),
+        id: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/),
         revision: z.number().int().nonnegative(),
         reason: z.string().trim().max(160).default(''),
         stock: z.number().int().min(0).max(1000000),
@@ -858,7 +875,10 @@ async function adminApi(request: Request, env: Env, path: string) {
         id: z.string(),
         action: z.enum(['approve', 'reject', 'photos']),
         qty: z.number().int().min(1).max(1000).optional(),
-        sku: z.enum(['FAMILY', 'GIFT']).optional(),
+        sku: z
+          .string()
+          .regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/)
+          .optional(),
         reason: z.string().max(300).default(''),
         photos: z.array(z.string().startsWith('/media/apple-2026/')).max(6).default([]),
         show: z.boolean().default(false),
@@ -911,11 +931,15 @@ async function adminApi(request: Request, env: Env, path: string) {
       })
       .parse(b);
     const p = await env.DB.prepare(
-      "SELECT p.unit_weight_g,s.qty,p.count_per_box,o.amount paid_amount,o.discount_amount,(SELECT COALESCE(SUM(c.amount),0) FROM claims c JOIN shipments old_s ON old_s.id=c.shipment_id WHERE old_s.source='retail' AND old_s.source_id=o.id) claimed_amount FROM shipments s JOIN products p ON s.product_id=p.id LEFT JOIN orders o ON s.source='retail' AND s.source_id=o.id WHERE s.id=? AND s.status='shipped'",
+      "SELECT p.unit_weight_g,p.kind,s.qty,p.count_per_box,o.amount paid_amount,o.discount_amount,(SELECT COALESCE(SUM(c.amount),0) FROM claims c JOIN shipments old_s ON old_s.id=c.shipment_id WHERE old_s.source='retail' AND old_s.source_id=o.id) claimed_amount FROM shipments s JOIN products p ON s.product_id=p.id LEFT JOIN orders o ON s.source='retail' AND s.source_id=o.id WHERE s.id=? AND s.status='shipped'",
     )
       .bind(s.shipment_id)
       .first<any>();
-    assert(p && s.count <= p.qty * p.count_per_box, 400, '请核对坏果个数');
+    assert(
+      p && p.count_per_box > 0 && s.count <= p.qty * p.count_per_box,
+      400,
+      '该商品不支持按坏果计赔，请使用订单退款',
+    );
     const requestedAmount = s.count * (p.unit_weight_g === 350 ? 1500 : 500);
     const amount =
       p.discount_amount > 0

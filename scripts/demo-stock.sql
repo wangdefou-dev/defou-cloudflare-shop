@@ -1,2 +1,2 @@
 -- Local demo ONLY. Never apply to the remote database.
-UPDATE products SET stock=100,active=1;
+UPDATE products SET stock=100 WHERE active=1;

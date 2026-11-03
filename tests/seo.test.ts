@@ -1,3 +1,4 @@
+import catalog from '../config/products.json';
 import { SEASON_END } from '../src/lib/shared';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -59,7 +60,8 @@ test('canonical links cannot inherit personal query parameters or a preview host
 test('sitemaps whitelist public content, preview maps are empty, crawler rules exclude private paths', () => {
   const sitemap = sitemapXml(true);
   assert.equal((sitemap.match(/<loc>/g) || []).length, PUBLIC_PATHS.length);
-  assert(sitemap.includes(PUBLIC_ORIGIN + '/apples/family'));
+  assert(sitemap.includes(PUBLIC_ORIGIN + '/products/' + catalog[0].slug));
+  assert(!sitemap.includes('/apples/'));
   assert(!/\/api\/|\/admin|\/tree\/my|\/order|\/pay\/|\/media\//.test(sitemap));
   assert(!sitemapXml(false).includes('<loc>'));
   assert.equal(robotsText(false), 'User-agent: *\nDisallow: /\n');
@@ -93,7 +95,12 @@ test('product metadata uses actual DB prices and never claims availability from 
     'https://schema.org/OutOfStock',
   );
   assert.equal(
-    productSchema(product, stock, { SALES_OPEN: 'true' }, new Date(Date.parse(SEASON_END+'T00:00:00+08:00')+2*86400000)).offers,
+    productSchema(
+      product,
+      stock,
+      { SALES_OPEN: 'true' },
+      new Date(Date.parse(SEASON_END + 'T00:00:00+08:00') + 2 * 86400000),
+    ).offers,
     undefined,
   );
   assert.equal(productSchema(product, null, { SALES_OPEN: 'true' }, season).offers, undefined);
@@ -124,9 +131,9 @@ test('all public TDK and custom titles carry the current brand and publisher exa
 
 test('search graph links the brand, publisher and broad origin; product breadcrumbs match navigation', () => {
   const graph = websiteGraph(
-    '/apples/family',
-    PAGE_META['/apples/family'].title,
-    PAGE_META['/apples/family'].description,
+    '/products/' + catalog[0].slug,
+    PAGE_META['/products/' + catalog[0].slug].title,
+    PAGE_META['/products/' + catalog[0].slug].description,
   );
   const brand = graph.find((node) => node['@type'] === 'Brand')!;
   const organization = graph.find((node) => node['@type'] === 'Organization')!;
@@ -144,8 +151,8 @@ test('search graph links the brand, publisher and broad origin; product breadcru
     crumbs.map((c) => [c.position, c.name]),
     [
       [1, '首页'],
-      [2, '买苹果'],
-      [3, '家庭装'],
+      [2, '选购商品'],
+      [3, catalog[0].name],
     ],
   );
   assert.equal(crumbs[1].item, PUBLIC_ORIGIN + '/buy');
@@ -157,10 +164,10 @@ test('machine-readable facts stay public and accurate; QR and private routes rem
     BRAND_NAME,
     PUBLISHER_TAGLINE,
     ORIGIN_LABEL,
-    '单果约250g',
-    '单果约350g',
-    '富贵树本季15箱',
-    '至少6人',
+    catalog[0].name,
+    catalog[0].specification,
+    '得否科技',
+    'https://x.com/wangdefou',
   ])
     assert(facts.includes(value));
   assert(!facts.includes('your_wechat_id'));

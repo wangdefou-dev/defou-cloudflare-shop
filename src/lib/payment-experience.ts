@@ -1,3 +1,4 @@
+import { catalogProduct } from './catalog';
 export type PaymentMethodChoice = 'auto' | 'alipay' | 'card';
 
 // These signals change payment presentation only; they never authorize an order.
@@ -30,7 +31,11 @@ export function publicPaymentLink(href: string) {
   const sku = url.searchParams.get('sku');
   url.search = '';
   url.hash = '';
-  if (sku && ['FAMILY', 'GIFT'].includes(sku) && ['/', '/buy'].includes(url.pathname))
+  if (
+    sku &&
+    (catalogProduct(sku) || ['FAMILY', 'GIFT'].includes(sku)) &&
+    ['/', '/buy'].includes(url.pathname)
+  )
     url.searchParams.set('sku', sku);
   return url.href;
 }

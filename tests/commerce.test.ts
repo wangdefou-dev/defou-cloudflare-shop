@@ -17,7 +17,7 @@ class LocalD1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(fs.readFileSync('migrations/' + f, 'utf8'));
-    this.db.exec(fs.readFileSync('scripts/seed.sql', 'utf8'));
+    this.db.exec(fs.readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
     this.db.exec(fs.readFileSync('scripts/demo-stock.sql', 'utf8'));
     this.db.exec(fs.readFileSync('scripts/regions.sql', 'utf8'));
   }
@@ -179,8 +179,14 @@ test('admin order detail reveals pending recipient only after authentication and
     403,
   );
   assert.equal(
-    (await call(env, '/admin/order-detail', { id: orderId }, { origin: 'https://shop.example.com' }))
-      .status,
+    (
+      await call(
+        env,
+        '/admin/order-detail',
+        { id: orderId },
+        { origin: 'https://shop.example.com' },
+      )
+    ).status,
     503,
   );
   const unauthorized = await call(
@@ -980,10 +986,10 @@ test('season-end creates one remaining-box shipment to latest non-remote address
     { qty: 2, address: addr, expected_date: chinaDate(2) },
     { headers: { cookie } },
   );
-  const after = Date.parse(SEASON_END+'T01:00:00+08:00')+86400000;
-  const date = chinaDate(0,new Date(after));
+  const after = Date.parse(SEASON_END + 'T01:00:00+08:00') + 86400000;
+  const date = chinaDate(0, new Date(after));
   await maintenance(env, new Date(after));
-  await maintenance(env, new Date(after+600000));
+  await maintenance(env, new Date(after + 600000));
   assert.equal((db.prepare('SELECT used_boxes FROM adoptions').get() as any).used_boxes, 8);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM shipments').get() as any).n, 2);
   assert.equal(

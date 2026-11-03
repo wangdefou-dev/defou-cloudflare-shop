@@ -1,0 +1,130 @@
+---
+import site from '../../config/site.json';
+import '../styles/global.css';
+import '../styles/storefront.css';
+import Analytics from '../components/Analytics.astro';
+import OpenSourceCredit from '../components/OpenSourceCredit.astro';
+import { env } from 'cloudflare:workers';
+import { activeCatalog } from '../lib/catalog';
+import { PUBLIC_PATHS, PUBLIC_ORIGIN, publicSearchEnabled } from '../lib/public-site';
+import {
+  PAGE_META,
+  canonicalUrl,
+  websiteGraph,
+  serializeJsonLd,
+  publisherTitle,
+  publisherDescription,
+} from '../lib/seo';
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  structuredData?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const meta = PAGE_META[path] || PAGE_META['/'];
+const {
+  title: rawTitle = meta.title,
+  description: rawDescription = meta.description,
+  image = meta.image || activeCatalog()[0]?.image,
+  imageAlt = site.name,
+  structuredData = [],
+  noindex = false,
+} = Astro.props;
+const title = publisherTitle(rawTitle),
+  description = publisherDescription(rawDescription);
+const isPublic = PUBLIC_PATHS.includes(path),
+  indexable = isPublic && !noindex && publicSearchEnabled(env, Astro.url);
+const robots = indexable ? 'index,follow,max-image-preview:large' : 'noindex,nofollow,noarchive';
+Astro.response.headers.set('X-Robots-Tag', robots);
+const graph =
+  isPublic && !noindex ? [...websiteGraph(path, title, description), ...structuredData] : [];
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="icon" href="/brand/store.svg" type="image/svg+xml" />
+    {isPublic && (
+      <>
+        <link rel="canonical" href={canonicalUrl(path)} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={site.name} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonicalUrl(path)} />
+        {image && (
+          <>
+            <meta property="og:image" content={new URL(image, PUBLIC_ORIGIN).href} />
+            <meta property="og:image:alt" content={imageAlt} />
+          </>
+        )}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:creator" content="@wangdefou" />
+      </>
+    )}
+    {indexable && env.GOOGLE_SITE_VERIFICATION && (
+      <meta name="google-site-verification" content={env.GOOGLE_SITE_VERIFICATION} />
+    )}
+    {indexable && env.BING_SITE_VERIFICATION && (
+      <meta name="msvalidate.01" content={env.BING_SITE_VERIFICATION} />
+    )}
+    {graph.length > 0 && (
+      <script
+        type="application/ld+json"
+        set:html={serializeJsonLd({ '@context': 'https://schema.org', '@graph': graph })}
+      />
+    )}
+  </head>
+  <body class="storefront">
+    <header class="store-header">
+      <a class="store-brand" href="/" aria-label={site.name + ' 首页'}>
+        <img src="/brand/store.svg" width="34" height="34" alt="" />
+        {site.name}
+      </a>
+      <nav aria-label="主导航">
+        <a href="/buy">选购商品</a>
+        <a href="/guide">配送与售后</a>
+        <a href="/order">查订单</a>
+      </nav>
+    </header>
+    <main id="main-content">
+      <slot />
+    </main>
+    <footer class="store-footer">
+      <div>
+        <strong>{site.name}</strong>
+        <p>{site.storefront.shippingNote}</p>
+        <small>
+          © {new Date().getFullYear()} {site.publisher}
+        </small>
+      </div>
+      <nav aria-label="页脚导航">
+        <a href="/guide">购买帮助</a>
+        <a href="/order">订单与售后</a>
+        <a href="/privacy">隐私说明</a>
+        {site.ownerWechat && <span>客服微信：{site.ownerWechat}</span>}
+        {site.ownerXUrl && (
+          <a href={site.ownerXUrl} target="_blank" rel="noopener noreferrer">
+            商店主页
+          </a>
+        )}
+      </nav>
+    </footer>
+    <OpenSourceCredit />
+    {publicSearchEnabled(env, Astro.url) && (
+      <Analytics
+        googleId={env.GOOGLE_ANALYTICS_ID}
+        cloudflareToken={env.CLOUDFLARE_ANALYTICS_TOKEN}
+        track={indexable}
+      />
+    )}
+  </body>
+</html>

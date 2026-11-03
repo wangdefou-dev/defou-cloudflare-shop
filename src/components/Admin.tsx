@@ -25,7 +25,7 @@ import AdminPeople from './AdminPeople';
 import AdminAdoptionDetail from './AdminAdoptionDetail';
 import AdminGifts from './AdminGifts';
 import AdminShipmentPicker from './AdminShipmentPicker';
-const tabs = [
+const allTabs = [
   ['orders', '订单', ClipboardList],
   ['customers', '用户列表', Users],
   ['shipments', '发货', Package],
@@ -38,6 +38,10 @@ const tabs = [
   ['claims', '坏果理赔', ShieldCheck],
   ['diary', '采摘日记', Camera],
 ] as const;
+const tabs = allTabs.filter(
+  ([id]) =>
+    site.features.orchard || !['adoptions', 'sponsors', 'gifts', 'claims', 'diary'].includes(id),
+);
 // Sponsor applications use pending for review, rather than an unpaid order.
 const sponsorStatusNames: Record<string, string> = {
   pending: '待审核',
@@ -242,7 +246,11 @@ export default function Admin() {
   const list = paginated
     ? pageData.rows
     : (data?.[tab] || []).filter(
-        (o: any) => !query || JSON.stringify(o).toLowerCase().includes(query.toLowerCase()),
+        (o: any) =>
+          (tab !== 'products' ||
+            site.features.orchard ||
+            !['FAMILY', 'GIFT', 'PA', 'FG'].includes(o.sku)) &&
+          (!query || JSON.stringify(o).toLowerCase().includes(query.toLowerCase())),
       );
   const fields = (m: any) => {
     const x = m.item;
@@ -251,7 +259,7 @@ export default function Admin() {
         {m.kind === 'ship' && (
           <>
             <p>
-              {x.box_type} · {x.qty} 箱 · {x.recipient}
+              {x.box_type} · {x.qty} 件 · {x.recipient}
             </p>
             <Field label="快递公司">
               <select
@@ -284,7 +292,7 @@ export default function Admin() {
         )}
         {m.kind === 'product' && (
           <>
-            <Field label="可售库存 / 剩余认领名额">
+            <Field label="可售库存">
               <input
                 name="stock"
                 type="number"
@@ -295,7 +303,7 @@ export default function Admin() {
               />
             </Field>
             <Field label="库存调整原因（改数量时必填）">
-              <input name="adjustment_reason" maxLength={160} placeholder="如：盘点补入 20 箱" />
+              <input name="adjustment_reason" maxLength={160} placeholder="如：盘点补入 20 件" />
             </Field>
             <Field label="下一批日期（选填）">
               <input name="restock_date" type="date" defaultValue={x.restock_date || ''} />
@@ -309,7 +317,7 @@ export default function Admin() {
         )}
         {m.kind === 'settings' && (
           <>
-            <Field label="偏远运费（元 / 箱）">
+            <Field label="偏远运费（元 / 件）">
               <input
                 name="remote_fee"
                 type="number"
@@ -422,8 +430,8 @@ export default function Admin() {
   return (
     <div className="admin-wrap">
       <div className="admin-heading">
-        <PageIntro eyebrow="ORCHARD SHOP / OPERATIONS" title="把每一份心意，安排好">
-          果园运营台 · {site.season.label}
+        <PageIntro eyebrow="DEFOU SHOP / OPERATIONS" title="把每一份订单，安排好">
+          商店运营台 · {site.season.label}
         </PageIntro>
         <a className="button secondary" href="/api/admin/export">
           <ArrowDownToLine size={17} />
@@ -447,29 +455,33 @@ export default function Admin() {
               <small>待发货</small>
               <strong>
                 {data.stats.pending_boxes}
-                <em>箱</em>
+                <em>件</em>
               </strong>
             </div>
-            <div>
-              <small>认领苹安树</small>
-              <strong>
-                {data.stats.trees}
-                <em>棵</em>
-              </strong>
-            </div>
-            <button
-              type="button"
-              className="admin-review-entry"
-              onClick={() => changeTab('sponsors')}
-              aria-label={`查看待审核活动，${data.stats.pending_sponsors} 场`}
-            >
-              <small>待审核活动</small>
-              <strong>
-                {data.stats.pending_sponsors}
-                <em>场</em>
-              </strong>
-              <span className="admin-metric-action">查看申请 →</span>
-            </button>
+            {site.features.orchard && (
+              <>
+                <div>
+                  <small>认领苹安树</small>
+                  <strong>
+                    {data.stats.trees}
+                    <em>棵</em>
+                  </strong>
+                </div>
+                <button
+                  type="button"
+                  className="admin-review-entry"
+                  onClick={() => changeTab('sponsors')}
+                  aria-label={`查看待审核活动，${data.stats.pending_sponsors} 场`}
+                >
+                  <small>待审核活动</small>
+                  <strong>
+                    {data.stats.pending_sponsors}
+                    <em>场</em>
+                  </strong>
+                  <span className="admin-metric-action">查看申请 →</span>
+                </button>
+              </>
+            )}
           </div>
           <div className="admin-shell">
             <nav className="admin-nav" aria-label="后台功能">
@@ -638,7 +650,7 @@ export default function Admin() {
                           </div>
                           <p>
                             {x.product_name || '预约运费'} · {x.qty || 1}{' '}
-                            {x.type === 'adoption' ? '棵' : '箱'} · {x.phone} · ¥{money(x.amount)}
+                            {x.type === 'adoption' ? '棵' : '件'} · {x.phone} · ¥{money(x.amount)}
                           </p>
                           <small>{adminTime(x.created_at)}（北京时间）</small>
                           {x.stripe_payment_intent && (
@@ -650,7 +662,7 @@ export default function Admin() {
                         <>
                           <div>
                             <strong>
-                              {x.box_type} · {x.qty} 箱
+                              {x.box_type} · {x.qty} 件
                             </strong>
                             <span className={'status-tag ' + x.status}>
                               {statusNames[x.status]}
@@ -669,8 +681,7 @@ export default function Admin() {
                         <>
                           <strong>{x.name}</strong>
                           <p>
-                            ¥{money(x.price)} · 可售 {x.stock}{' '}
-                            {['PA', 'FG'].includes(x.sku) ? '棵' : '箱'} ·{' '}
+                            ¥{money(x.price)} · 可售 {x.stock} {x.unit || '件'} ·{' '}
                             {x.active ? '已上架' : '已下架'}
                           </p>
                           <small>

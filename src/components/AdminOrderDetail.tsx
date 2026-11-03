@@ -199,7 +199,7 @@ export default function AdminOrderDetail({
                 <div>
                   <dt>订单类型</dt>
                   <dd>
-                    {{ retail: '苹果零售', adoption: '果树认领', shipping: '预约补运费' }[
+                    {{ retail: '商品零售', adoption: '果树认领', shipping: '预约补运费' }[
                       order.type
                     ] || order.type}
                   </dd>
@@ -221,7 +221,7 @@ export default function AdminOrderDetail({
                       </dd>
                     </div>
                     <div>
-                      <dt>优惠券减免（仅一箱）</dt>
+                      <dt>优惠券减免（仅一件）</dt>
                       <dd>
                         −¥{money(order.discount_amount)} ·{' '}
                         {(100 - (order.coupon_percent_off || 0)) / 10} 折
@@ -272,7 +272,8 @@ export default function AdminOrderDetail({
                   <Package size={22} aria-hidden="true" />
                   <div>
                     <strong>
-                      {item.product_name} × {item.qty} {order.type === 'adoption' ? '棵' : '箱'}
+                      {item.product_name} × {item.qty}{' '}
+                      {item.unit || (order.type === 'adoption' ? '棵' : '件')}
                     </strong>
                     <p>
                       {item.box_type} · 单果约 {item.unit_weight_g}g
@@ -351,7 +352,7 @@ export default function AdminOrderDetail({
                   <div className="admin-detail-section-heading">
                     <strong>
                       <Truck size={18} aria-hidden="true" />
-                      {s.box_type} · {s.qty} 箱
+                      {s.box_type} · {s.qty} 件
                     </strong>
                     <span className={'status-tag ' + s.status}>
                       {s.status === 'reserved' ? '待发货' : statusNames[s.status] || s.status}

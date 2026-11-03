@@ -5,12 +5,14 @@ export class LocalD1 {
   failLinkWrites = 0;
   beforeShipment: (() => Promise<void>) | undefined;
   beforePaymentLease: (() => void) | undefined;
-  constructor() {
+  constructor(generic = false) {
     for (const f of readdirSync('migrations')
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(readFileSync('migrations/' + f, 'utf8'));
-    this.db.exec(readFileSync('scripts/seed.sql', 'utf8'));
+    this.db.exec(
+      readFileSync(generic ? 'scripts/seed.sql' : 'tests/fixtures/orchard-seed.sql', 'utf8'),
+    );
     this.db.exec(readFileSync('scripts/regions.sql', 'utf8'));
     this.db.exec('UPDATE products SET stock=100');
   }

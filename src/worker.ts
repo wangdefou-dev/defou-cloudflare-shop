@@ -1,3 +1,4 @@
+import site from '../config/site.json';
 import { offlineResponse } from './lib/site-status';
 import { bundledAsset } from './lib/static-assets';
 import { staticPage } from './lib/static-pages';
@@ -7,6 +8,13 @@ export default {
     const offline = offlineResponse(env, request);
     if (offline) return offline;
     const url = new URL(request.url);
+    if (
+      !site.features.orchard &&
+      ['/tree', '/treat', '/apples/family', '/apples/gift'].includes(
+        url.pathname.replace(/\/$/, ''),
+      )
+    )
+      return new Response('Not found', { status: 404, headers: { 'x-robots-tag': 'noindex' } });
     let response: Response;
     const asset = (await bundledAsset(request, env.ASSETS)) || (await staticPage(request, env));
     if (asset) response = asset;

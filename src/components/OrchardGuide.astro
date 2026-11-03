@@ -1,0 +1,112 @@
+---
+import site from '../../config/site.json';
+export const prerender = true;
+import ProductPhoto from '../components/ProductPhoto';
+import Layout from '../layouts/Layout.astro';
+import {
+  APPLE_PRODUCTS,
+  APPLE_FAQS,
+  BRAND_NAME,
+  CONTENT_UPDATED,
+  ORIGIN_LABEL,
+  SEASON_PRICES,
+} from '../lib/content';
+import { faqSchema } from '../lib/seo';
+import { money } from '../lib/shared';
+---
+
+<Layout structuredData={[faqSchema()]}>
+  <article class="page-wrap buying-guide">
+    <nav class="breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a>
+      <span>/</span>
+      <span>选购与配送指南</span>
+    </nav>
+    <header class="guide-heading">
+      <div class="eyebrow">A FEW THINGS BEFORE AUTUMN ARRIVES</div>
+      <h1>
+        先了解清楚，
+        <br />
+        再把秋天带回家
+      </h1>
+      <p>从规格到寄送，把你关心的事放在这里。</p>
+      <p class="fine-print">
+        适用 2026 秋收季 · 更新于 <time datetime={CONTENT_UPDATED}>{CONTENT_UPDATED}</time>
+      </p>
+    </header>
+    <section class="guide-section">
+      <h2>苹果来自哪里？</h2>
+      <p>
+        品牌为「{BRAND_NAME}」，果园位于 <strong>{ORIGIN_LABEL}</strong>
+        。网站由 {site.publisher} 运营，这里介绍苹果和农事，不提供私人住址或果园具体定位。
+      </p>
+    </section>
+    <section class="guide-section">
+      <h2>选日常，还是选心意？</h2>
+      <div class="guide-product-grid">
+        {APPLE_PRODUCTS.map((p) => (
+          <a href={'/apples/' + p.slug} class="guide-product">
+            <ProductPhoto sku={p.sku} sizes="(max-width: 1200px) 44vw, 560px" />
+            <div>
+              <h3>
+                {p.name} <span>{'¥' + money(SEASON_PRICES[p.sku])}</span>
+              </h3>
+              <p>
+                {p.count} 个 / 箱 · 单果约 {p.weight}g · 总重约 {p.totalKg}kg
+              </p>
+              <span class="text-link">查看这一箱 ↗</span>
+            </div>
+          </a>
+        ))}
+      </div>
+      <p class="fine-print">规格与约重以文字说明为准，果品和包装以实物为准。</p>
+    </section>
+    <section class="guide-section">
+      <h2>如果想认领一整季</h2>
+      <p>
+        平安树 {'¥' + money(SEASON_PRICES.PA)}，本季共 8 箱，每箱 10 斤；富贵树{' '}
+        {'¥' + money(SEASON_PRICES.FG)}，本季共 15 箱，每箱 6
+        斤。可分次预约、寄往不同地址；认领箱型与零售箱型不同，不要把两者的每箱个数或重量混用。
+      </p>
+      <p>
+        本季不自动续费。全部箱数请在 {site.season.end} 前预约，期望发货日不早于两天后，且不晚于{' '}
+        {site.season.end}
+        ；不足量时以同一果园同等级苹果补足。偏远运费按每次预约箱数补差，未预约箱数的处理见认领页规则。
+      </p>
+      <a href="/tree" class="text-link">
+        了解苹安树认领 ↗
+      </a>
+    </section>
+    <section class="guide-section" id="faq">
+      <h2>常见问题，逐个说清</h2>
+      <div class="faq-list">
+        {APPLE_FAQS.map(([q, a]) => (
+          <details>
+            <summary>
+              {q}
+              <span>+</span>
+            </summary>
+            <p>{a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+    <section class="guide-section">
+      <h2>已经下单，或者想组织一场相聚？</h2>
+      <p>
+        查询物流和售后请准备下单手机号与订单号；认领预约使用认领码与 PIN
+        登录。订单与收件信息不会出现在公开足迹中。社区活动赞助采用人工审核，具体日期要求、申请材料和返图授权以申请页为准。
+      </p>
+      <div class="detail-links">
+        <a href="/order">订单与售后 ↗</a>
+        <a href="/tree/my">我的苹安树 ↗</a>
+        <a href="/treat">申请活动赞助 ↗</a>
+        <a href="/privacy">隐私说明 ↗</a>
+      </div>
+    </section>
+    <p class="fine-print">
+      本页说明适用于 2026
+      秋收季。当前价格、库存、开售状态与运费以下单页为准；需要帮助可从订单页联系运营。
+    </p>
+  </article>
+</Layout>

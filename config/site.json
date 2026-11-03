@@ -1,5 +1,5 @@
 {
-  "name": "示例果园",
+  "name": "示例商店",
   "publisher": "示例运营者",
   "originLabel": "示例产地",
   "url": "https://shop.example.com",
@@ -11,7 +11,7 @@
   "season": {
     "start": "2026-10-22",
     "end": "2099-12-31",
-    "label": "一季好苹果"
+    "label": "好物小店"
   },
   "paymentProject": "orchard-shop",
   "mapOrigin": {
@@ -25,13 +25,17 @@
     "FG": 188800
   },
   "shipping": {
-    "remoteProvinces": [
-      "150000",
-      "460000",
-      "540000",
-      "630000",
-      "650000"
-    ],
+    "remoteProvinces": ["150000", "460000", "540000", "630000", "650000"],
     "remoteFee": 2000
+  },
+  "storefront": {
+    "headline": "把喜欢的好物，送到你手里",
+    "description": "书籍、服饰、日用品、手作与农产品，都可以成为你的小店商品。",
+    "shippingNote": "付款后按商品说明安排发货，到货时间以实际物流为准。",
+    "afterSalesNote": "如有商品质量、缺件或运输问题，请保留订单号和照片，及时联系客服协商处理。",
+    "seasonal": false
+  },
+  "features": {
+    "orchard": false
   }
 }

@@ -1,0 +1,42 @@
+---
+import site from '../../config/site.json';
+import Layout from '../layouts/Layout.astro';
+import { activeCatalog, productPath } from '../lib/catalog';
+---
+
+<Layout>
+  <article class="store-shell store-prose">
+    <p class="store-kicker">SHOPPING & SERVICE</p>
+    <h1>配送与售后</h1>
+    <h2>商品与规格</h2>
+    <p>以下单前展示的名称、规格、数量和服务端实时价格为准。</p>
+    <ul>
+      {activeCatalog().map((p) => (
+        <li>
+          <a href={productPath(p)}>{p.name}</a>：{p.specification}，按{p.unit}购买。
+        </li>
+      ))}
+    </ul>
+    <h2>配送安排</h2>
+    <p>{site.storefront.shippingNote}</p>
+    <p>
+      偏远地区运费按收件省份和购买数量计算，最终费用在确认订单时展示。请仔细核对手机号和完整收货地址。
+    </p>
+    <h2>订单与支付</h2>
+    <p>
+      每次订单购买一种商品规格，可选择数量。付款通过 Stripe
+      托管收银台处理，订单状态以系统确认结果为准；请保存订单号。
+    </p>
+    <h2>售后处理</h2>
+    <p>{site.storefront.afterSalesNote}</p>
+    <p>
+      客服微信：{site.ownerWechat || '请通过经营者提供的渠道联系'}
+      。退货、换货和退款事宜请先联系经营者确认。
+    </p>
+    <h2>发票</h2>
+    <p>如需发票，可在下单时填写信息；开票资格和可提供的票种请先与 {site.publisher} 确认。</p>
+    <a class="button primary" href="/buy">
+      去选购商品 ↗
+    </a>
+  </article>
+</Layout>

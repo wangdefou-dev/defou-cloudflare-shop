@@ -79,7 +79,7 @@ export async function createSession(
             name: label,
             ...(order.discount_amount > 0
               ? {
-                  description: `商品及运费原额 ¥${money(order.original_amount)}；${couponLabel(order.coupon_percent_off)}券仅优惠1箱 −¥${money(order.discount_amount)}；实付 ¥${money(order.amount)}`,
+                  description: `商品及运费原额 ¥${money(order.original_amount)}；${couponLabel(order.coupon_percent_off)}券仅优惠1件 −¥${money(order.discount_amount)}；实付 ¥${money(order.amount)}`,
                 }
               : {}),
           },

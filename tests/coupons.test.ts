@@ -20,7 +20,7 @@ class D1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(readFileSync('migrations/' + f, 'utf8'));
-    for (const f of ['scripts/seed.sql', 'scripts/regions.sql'])
+    for (const f of ['tests/fixtures/orchard-seed.sql', 'scripts/regions.sql'])
       this.db.exec(readFileSync(f, 'utf8'));
     this.db.exec('UPDATE products SET stock=100');
   }
@@ -549,7 +549,7 @@ test('Stripe session charges only the validated net amount and describes the one
       assert.equal(body.get('line_items[0][price_data][unit_amount]'), '1080');
       assert.match(
         body.get('line_items[0][price_data][product_data][description]')!,
-        /1 折券仅优惠1箱/,
+        /1 折券仅优惠1件/,
       );
       assert(!String(init?.body).includes(code));
       assert.equal(body.get('allow_promotion_codes'), null);
@@ -856,7 +856,7 @@ test('migration preserves old paid/refunded, pending and expired coupons, origin
     .filter((f) => f.endsWith('.sql') && f < '0010')
     .sort())
     db.exec(readFileSync('migrations/' + file, 'utf8'));
-  db.exec(readFileSync('scripts/seed.sql', 'utf8'));
+  db.exec(readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
   db.exec(
     "UPDATE products SET stock=10; INSERT INTO coupon_batches(id,name,starts_at,expires_at) VALUES('legacy','legacy',datetime('now','-1 day'),datetime('now','+6 days'))",
   );

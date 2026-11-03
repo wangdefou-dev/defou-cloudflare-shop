@@ -1,3 +1,4 @@
+import site from '../../config/site.json';
 import { assert, isDemo, isSandbox, digest } from './security';
 import { isSaleDay, SEASON_START, SEASON_END } from './shared';
 export async function validateAddress(env: Env, a: any) {
@@ -21,7 +22,9 @@ export async function validateAddress(env: Env, a: any) {
 }
 export function openSales(env: Env, request: Request) {
   assert(
-    isDemo(env, request) || isSandbox(env, request) || (env.SALES_OPEN === 'true' && isSaleDay()),
+    isDemo(env, request) ||
+      isSandbox(env, request) ||
+      (env.SALES_OPEN === 'true' && (!site.storefront.seasonal || isSaleDay())),
     409,
     `本季销售时间为 ${SEASON_START} 至 ${SEASON_END}`,
   );

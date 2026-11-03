@@ -1,15 +1,17 @@
+import catalog from '../../config/products.json';
 import site from '../../config/site.json';
 import { chinaDate, money } from './shared';
 import { PUBLIC_ORIGIN } from './public-site';
 import type Stripe from 'stripe';
 
-const PRODUCTS = {
+const PRODUCTS: Record<string, { name: string; unit: string }> = {
   FAMILY: { name: '家庭装', unit: '箱' },
   GIFT: { name: '礼盒装', unit: '箱' },
   PA: { name: '平安树', unit: '棵' },
   FG: { name: '富贵树', unit: '棵' },
-} as const;
-type ProductId = keyof typeof PRODUCTS;
+  ...Object.fromEntries(catalog.map((p) => [p.sku, { name: p.name, unit: p.unit }])),
+};
+type ProductId = string;
 type PaidPayload = {
   order_no: string;
   type: 'retail' | 'adoption' | 'shipping';
@@ -81,7 +83,7 @@ export function paidOrderMessage(p: PaidPayload) {
     return product ? `${product.name} × ${i.qty} ${product.unit}` : '商品信息待核对';
   });
   return [
-    `🍎 ${site.name}｜${kind}`,
+    `📦 ${site.name}｜${kind}`,
     `订单号：${p.order_no}`,
     ...(p.discount_amount
       ? [
@@ -102,7 +104,7 @@ export function sponsorApplicationMessage(p: SponsorPayload) {
   // Do not forward free-text fields: titles/reasons/links may contain contact
   // details. The reference lets the owner read the full application in Access.
   return [
-    `🍎 ${site.name}｜新活动赞助申请`,
+    `📦 ${site.name}｜新活动赞助申请`,
     `申请编号：${p.app_no}`,
     `活动日期：${p.event_date}`,
     `预计人数：${p.headcount} 人`,
@@ -115,9 +117,9 @@ export function sponsorApplicationMessage(p: SponsorPayload) {
 
 export function refundResultMessage(p: RefundPayload) {
   const status = { succeeded: '退款成功', failed: '退款失败', canceled: '退款已取消' }[p.status];
-  const type = { retail: '苹果零售', adoption: '果树认领', shipping: '补运费' }[p.order_type];
+  const type = { retail: '商品零售', adoption: '果树认领', shipping: '补运费' }[p.order_type];
   return [
-    `🍎 ${site.name}｜${status}`,
+    `📦 ${site.name}｜${status}`,
     `订单号：${p.order_no}`,
     `订单类型：${type}`,
     `订单实付：¥${money(p.paid_amount)}`,
@@ -232,7 +234,7 @@ export async function dailyReportMessage(env: Env, date: string, now = new Date(
     )
     SELECT p.id,COALESCE(i.qty,0) qty,COALESCE(i.amount,0) amount,t.orders,t.total_amount
     FROM products p LEFT JOIN items i ON i.product_id=p.id CROSS JOIN totals t
-    WHERE p.id IN ('FAMILY','GIFT','PA','FG')`,
+    WHERE p.active=1 OR EXISTS(SELECT 1 FROM items WHERE product_id=p.id)`,
   )
     .bind(start, end)
     .all<ProductSummary>();
@@ -244,8 +246,8 @@ export async function dailyReportMessage(env: Env, date: string, now = new Date(
     `累计订单量：${totals?.orders || 0} 单`,
     `累计销售额：¥${money(totals?.total_amount || 0)}`,
     '',
-    ...Object.entries(PRODUCTS).map(([id, product]) => {
-      const row = summary.results.find((item) => item.id === id);
+    ...summary.results.map((row) => {
+      const product = PRODUCTS[row.id] || { name: row.id, unit: '件' };
       return `${product.name}：${row?.qty || 0} ${product.unit}，¥${money(row?.amount || 0)}`;
     }),
   ].join('\n');
@@ -382,7 +384,7 @@ export async function flushCommerceNotifications(
             : n.kind === 'refund_result'
               ? refundResultMessage(payload)
               : n.kind === 'operation_alert'
-                ? `🍎 ${site.name}｜运营提醒\n` + payload.message + '\n' + PUBLIC_ORIGIN + '/admin'
+                ? `📦 ${site.name}｜运营提醒\n` + payload.message + '\n' + PUBLIC_ORIGIN + '/admin'
                 : payload.message;
       await sendTelegram(env, message, sender);
       await env.DB.prepare(

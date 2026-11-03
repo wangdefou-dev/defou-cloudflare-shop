@@ -1,3 +1,5 @@
+import { activeCatalog, productPath } from './catalog';
+import type { CatalogProduct } from './catalog';
 import site from '../../config/site.json';
 import { SCENE_IMAGES, SHOP_IMAGES } from './media';
 import { PUBLIC_PATHS } from './public-site';
@@ -94,6 +96,32 @@ for (const p of APPLE_PRODUCTS)
     ],
     image: p.image,
   };
+if (!site.features.orchard) {
+  for (const [path, label] of [
+    ['/', '首页'],
+    ['/buy', '选购商品'],
+    ['/guide', '配送与售后'],
+    ['/map', '配送足迹'],
+  ])
+    PAGE_META[path] = {
+      title: BRAND_NAME + '｜' + label,
+      description: site.storefront.description,
+      keywords: [BRAND_NAME, '独立商城', '商品', '实物配送'],
+      label,
+      image: activeCatalog()[0]?.image,
+    };
+}
+for (const p of activeCatalog())
+  PAGE_META[productPath(p)] = {
+    title: p.name + '｜' + BRAND_NAME,
+    description: p.description,
+    label: p.name,
+    keywords: [BRAND_NAME, p.name, p.category],
+    image: p.image,
+  };
+if (!site.features.orchard)
+  for (const path of Object.keys(PAGE_META))
+    if (!PUBLIC_PATHS.includes(path)) delete PAGE_META[path];
 for (const meta of Object.values(PAGE_META)) {
   meta.title = publisherTitle(meta.title);
   meta.description = publisherDescription(meta.description);
@@ -138,18 +166,16 @@ export function websiteGraph(path: string, title: string, description: string) {
       name: BRAND_NAME,
       url: PUBLIC_ORIGIN,
       logo: PUBLIC_ORIGIN + '/brand/icon.svg',
-      description: `${PUBLISHER_TAGLINE}，果园位于${ORIGIN_LABEL}的季节性苹果品牌。`,
+      description: `${PUBLISHER_TAGLINE}，由 ${site.publisher} 经营的独立商店。`,
     },
     {
       '@type': 'Place',
       '@id': PUBLIC_ORIGIN + '/#orchard',
-      name: BRAND_NAME + '果园',
+      name: BRAND_NAME + '发货地',
       description: ORIGIN_LABEL,
       address: {
         '@type': 'PostalAddress',
         addressCountry: 'CN',
-        addressRegion: '河北省',
-        addressLocality: '邢台市',
       },
     },
     {
@@ -157,7 +183,7 @@ export function websiteGraph(path: string, title: string, description: string) {
       '@id': PUBLIC_ORIGIN + '/#website',
       url: PUBLIC_ORIGIN,
       name: BRAND_NAME,
-      alternateName: BRAND_NAME + '苹果',
+      alternateName: BRAND_NAME,
       inLanguage: 'zh-CN',
       publisher: { '@id': PUBLIC_ORIGIN + '/#organization' },
     },
@@ -179,12 +205,19 @@ export function websiteGraph(path: string, title: string, description: string) {
       '@id': url + '#breadcrumb',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: '首页', item: PUBLIC_ORIGIN + '/' },
-        ...(path.startsWith('/apples/')
-          ? [{ '@type': 'ListItem', position: 2, name: '买苹果', item: canonicalUrl('/buy') }]
+        ...(path.startsWith('/apples/') || path.startsWith('/products/')
+          ? [
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: site.features.orchard ? '买苹果' : '选购商品',
+                item: canonicalUrl('/buy'),
+              },
+            ]
           : []),
         {
           '@type': 'ListItem',
-          position: path.startsWith('/apples/') ? 3 : 2,
+          position: path.startsWith('/apples/') || path.startsWith('/products/') ? 3 : 2,
           name: PAGE_META[path]?.label || title.split('｜')[0],
           item: url,
         },
@@ -262,6 +295,28 @@ export function sitemapXml(enabled: boolean) {
   return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${enabled ? PUBLIC_PATHS.map((p) => `<url><loc>${canonicalUrl(p)}</loc><lastmod>${CONTENT_UPDATED}</lastmod></url>`).join('') : ''}</urlset>`;
 }
 export function llmsText(enabled: boolean) {
+  if (enabled && !site.features.orchard)
+    return (
+      [
+        '# ' + BRAND_NAME,
+        site.storefront.description,
+        PUBLISHER_TAGLINE,
+        '发货地：' + ORIGIN_LABEL,
+        '经营者：' +
+          site.publisher +
+          '。开源项目由得否科技与得否维护，X：https://x.com/wangdefou 。',
+        '## 商品目录',
+        ...activeCatalog().map(
+          (p) =>
+            `- ${p.name}（${p.sku}）：${p.specification}；¥${(p.price / 100).toFixed(2)}/${p.unit}。${p.description} ${PUBLIC_ORIGIN + productPath(p)}`,
+        ),
+        '## 配送与售后',
+        site.storefront.shippingNote,
+        site.storefront.afterSalesNote,
+        '价格、库存与可售状态以下单时服务端校验为准。',
+        ...PUBLIC_PATHS.map((p) => `- ${PAGE_META[p]?.label || p}：${PUBLIC_ORIGIN + p}`),
+      ].join('\n\n') + '\n'
+    );
   if (!enabled) return `# ${BRAND_NAME}\n\n本站暂未开放搜索索引。\n`;
   return (
     [
@@ -288,4 +343,25 @@ export function llmsText(enabled: boolean) {
       `内容更新：${CONTENT_UPDATED}。`,
     ].join('\n\n') + '\n'
   );
+}
+
+export function catalogProductSchema(product: CatalogProduct) {
+  return {
+    '@type': 'Product',
+    '@id': canonicalUrl(productPath(product)) + '#product',
+    name: product.name,
+    sku: product.sku,
+    description: product.description,
+    image: new URL(product.image, PUBLIC_ORIGIN).href,
+    category: product.category,
+    brand: { '@type': 'Brand', name: BRAND_NAME },
+    additionalProperty: [{ '@type': 'PropertyValue', name: '规格', value: product.specification }],
+    offers: {
+      '@type': 'Offer',
+      url: canonicalUrl(productPath(product)),
+      priceCurrency: 'CNY',
+      price: (product.price / 100).toFixed(2),
+      seller: { '@id': PUBLIC_ORIGIN + '/#organization' },
+    },
+  };
 }

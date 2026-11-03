@@ -34,7 +34,7 @@ export const checkout = z
   .object({
     request_id: z.uuid().optional(),
     type: z.enum(['retail', 'adoption']),
-    sku: z.enum(['FAMILY', 'GIFT', 'PA', 'FG']),
+    sku: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/, '商品编号无效'),
     qty: z.number().int().min(1).max(20),
     phone,
     address: address.optional(),
@@ -51,8 +51,8 @@ export const checkout = z
   })
   .superRefine((v, c) => {
     if (v.type === 'adoption' && v.coupon_code)
-      c.addIssue({ code: 'custom', message: '优惠券仅限零售苹果，不适用于果树认领' });
-    if (v.type === 'retail' && (!v.address || !['FAMILY', 'GIFT'].includes(v.sku)))
+      c.addIssue({ code: 'custom', message: '优惠券仅限零售商品，不适用于认领' });
+    if (v.type === 'retail' && !v.address)
       c.addIssue({ code: 'custom', message: '请填写完整收件信息' });
     if (
       v.type === 'adoption' &&

@@ -133,8 +133,8 @@ export default function CouponField({ coupon }: { coupon: ReturnType<typeof useC
       >
         {coupon.error ||
           (coupon.quote
-            ? `已应用 ${couponLabel(coupon.quote.percent_off)}券，1 箱优惠 ¥${money(coupon.discount)}`
-            : '每单仅优惠一箱，不叠加，运费不参与优惠；可用次数以券规则为准')}
+            ? `已应用 ${couponLabel(coupon.quote.percent_off)}券，1 件优惠 ¥${money(coupon.discount)}`
+            : '每单仅优惠一件，不叠加，运费不参与优惠；可用次数以券规则为准')}
       </p>
       {coupon.quote && (
         <p className="coupon-terms">

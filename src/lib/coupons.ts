@@ -9,7 +9,10 @@ export async function quoteCoupon(
   sku: string,
   unitPrice: number,
 ): Promise<CouponQuote & { id: string }> {
-  assert(['FAMILY', 'GIFT'].includes(sku), 400, '优惠券仅限家庭装和礼盒装');
+  const product = await env.DB.prepare('SELECT kind FROM products WHERE sku=?')
+    .bind(sku)
+    .first<{ kind: string }>();
+  assert(product?.kind === 'retail', 400, '优惠券仅限零售商品');
   const normalized = normalizeCouponCode(code);
   assert(/^[A-Z0-9]{6,30}$/.test(normalized), 400, '请检查优惠码是否完整');
   const row = await env.DB.prepare(

@@ -1,6 +1,6 @@
 {
-  "name": "cloudflare-orchard-shop",
-  "version": "1.0.0",
+  "name": "defou-cloudflare-shop",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -28,7 +28,8 @@
     "db:regions:production": "wrangler d1 execute DB --remote --env production --file scripts/regions.sql",
     "secrets:production": "wrangler secret bulk .secrets.production.json --env production",
     "scan:public": "node scripts/scan-public.mjs",
-    "dev:pages": "astro dev --host 127.0.0.1"
+    "dev:pages": "astro dev --host 127.0.0.1",
+    "products": "node scripts/products.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.2",
@@ -56,8 +57,17 @@
     "wrangler": "^4.156.2"
   },
   "license": "MIT",
-  "description": "Cloudflare-native orchard storefront with checkout, tree adoption and operations dashboard",
+  "description": "得否科技 · 得否开源的 Cloudflare 通用实物商城，支持自定义商品、库存、优惠券、Stripe 支付和经营后台",
   "engines": {
     "node": ">=24 <25"
+  },
+  "author": {
+    "name": "得否科技 · 得否",
+    "url": "https://x.com/wangdefou"
+  },
+  "homepage": "https://github.com/wangdefou-dev/defou-cloudflare-shop",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangdefou-dev/defou-cloudflare-shop.git"
   }
 }

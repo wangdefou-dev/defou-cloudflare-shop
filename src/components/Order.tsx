@@ -1,3 +1,4 @@
+import site from '../../config/site.json';
 import { finishCheckoutIntent } from './checkout-client';
 import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Clock, ArrowUpRight, Copy, Package } from 'lucide-react';
@@ -125,18 +126,21 @@ export default function Order({ result = false }: { result?: boolean }) {
     setBusy(true);
     setError('');
     try {
-      await request('/demo/pay', {order_no:number, phone, view_token:viewToken});
-      const next = await request('/order/status', {view_token:viewToken});
-      setLoadedOrder({order:next,viewToken});
-    } catch (e) { setError((e as Error).message); }
-    finally { setBusy(false); }
+      await request('/demo/pay', { order_no: number, phone, view_token: viewToken });
+      const next = await request('/order/status', { view_token: viewToken });
+      setLoadedOrder({ order: next, viewToken });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
   return (
     <div className="page-wrap">
       {guide && <PaymentGuide order={order?.order_no} onClose={() => setGuide(false)} />}
       <PageIntro
         eyebrow="A LITTLE AUTUMN, ON ITS WAY"
-        title={result ? '这一份心意，有了回音' : '你的苹果，走到哪了？'}
+        title={result ? '这一份心意，有了回音' : '你的订单，走到哪了？'}
       >
         {result
           ? '支付状态以系统确认结果为准。请保存订单号，方便随时查找。'
@@ -173,10 +177,7 @@ export default function Order({ result = false }: { result?: boolean }) {
           </form>
           <div className="order-help">
             <h3>有一点小状况？</h3>
-            <p>
-              坏果请在收货 48 小时内拍照，保留订单号联系运营。250g 规格每个赔 ¥5，350g 规格每个赔
-              ¥15。
-            </p>
+            <p>{site.storefront.afterSalesNote}</p>
             {c?.contact_wechat ? (
               <p>
                 售后微信：<strong>{c.contact_wechat}</strong>
@@ -199,7 +200,7 @@ export default function Order({ result = false }: { result?: boolean }) {
               <span className={'status-tag ' + order.status}>{statusNames[order.status]}</span>
               <h2>
                 {order.status === 'paid'
-                  ? '苹果，准备出发'
+                  ? '商品，准备出发'
                   : order.status === 'shipped'
                     ? '你的秋天，正在路上'
                     : order.status === 'pending'
@@ -226,7 +227,7 @@ export default function Order({ result = false }: { result?: boolean }) {
                     <span>¥{money(order.original_amount)}</span>
                   </div>
                   <div className="summary-row">
-                    <span>优惠券（仅一箱）</span>
+                    <span>优惠券（仅一件）</span>
                     <span>−¥{money(order.discount_amount)}</span>
                   </div>
                 </>
@@ -249,6 +250,18 @@ export default function Order({ result = false }: { result?: boolean }) {
                 <span>发票</span>
                 <span>{statusNames[order.invoice_status]}</span>
               </div>
+              {order.items?.length > 0 && (
+                <div className="order-items">
+                  <h3>所购商品</h3>
+                  {order.items.map((item: any) => (
+                    <p key={item.product_id}>
+                      <strong>{item.product_name}</strong> × {item.qty} {item.unit || '件'}
+                      <br />
+                      <small>{item.specification}</small>
+                    </p>
+                  ))}
+                </div>
+              )}
               {order.adoption && (
                 <div className="adoption-receipt">
                   <h3>你的认领码</h3>
@@ -266,7 +279,7 @@ export default function Order({ result = false }: { result?: boolean }) {
                 <div className="shipment-card" key={s.id}>
                   <div>
                     <strong>
-                      {s.qty} 箱 · {s.region_label}
+                      {s.qty} {s.unit || '件'} · {s.region_label}
                     </strong>
                     <p>{statusNames[s.status]}</p>
                     <ShipmentTracking shipment={s} context="order" viewToken={viewToken} />
@@ -274,7 +287,9 @@ export default function Order({ result = false }: { result?: boolean }) {
                 </div>
               ))}
               {c?.demo && order.status === 'pending' && (
-                <Button type="button" busy={busy} onClick={simulatePayment}>模拟付款成功（不扣款）</Button>
+                <Button type="button" busy={busy} onClick={simulatePayment}>
+                  模拟付款成功（不扣款）
+                </Button>
               )}
               {order.status === 'pending' && (
                 <>
@@ -293,14 +308,14 @@ export default function Order({ result = false }: { result?: boolean }) {
               {c?.official_qr_url && (
                 <div className="official-follow">
                   <img src={c.official_qr_url} alt="公众号二维码" />
-                  <p>关注公众号，收下果园的下一封来信。</p>
+                  <p>关注公众号，了解商店的后续消息。</p>
                 </div>
               )}
             </>
           ) : (
             <>
               <Package size={70} strokeWidth={0.8} />
-              <h2>一箱苹果，一份惦记</h2>
+              <h2>商品与服务，认真交付</h2>
               <p>查到订单后，会在这里显示出发的消息。</p>
             </>
           )}

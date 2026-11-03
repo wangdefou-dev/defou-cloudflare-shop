@@ -1,0 +1,53 @@
+---
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+import { activeCatalog } from '../../lib/catalog';
+import { catalogProductSchema } from '../../lib/seo';
+import { money } from '../../lib/shared';
+export function getStaticPaths() {
+  return activeCatalog().map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+const { product } = Astro.props;
+---
+
+<Layout
+  title={product.name}
+  description={product.description}
+  image={product.image}
+  imageAlt={product.name}
+  structuredData={[catalogProductSchema(product)]}
+>
+  <article class="store-shell store-product-detail">
+    <nav class="store-breadcrumbs" aria-label="面包屑">
+      <a href="/">首页</a> / <a href="/buy">商品</a> / {product.name}
+    </nav>
+    <div class="store-detail-grid">
+      <img src={product.image} alt={product.name} width="900" height="700" />
+      <div>
+        <p class="store-kicker">{product.category}</p>
+        <h1>{product.name}</h1>
+        <p>{product.description}</p>
+        <dl>
+          <dt>规格</dt>
+          <dd>{product.specification}</dd>
+          <dt>购买单位</dt>
+          <dd>{product.unit}</dd>
+          <dt>每单限购</dt>
+          <dd>
+            {product.maxPerOrder} {product.unit}
+          </dd>
+        </dl>
+        <p class="store-price">
+          ¥{money(product.price)} <small>/ {product.unit}</small>
+        </p>
+        <p>价格、库存和可售状态以下单时的实时校验为准。</p>
+        <a class="button primary" href={'/buy?sku=' + encodeURIComponent(product.sku)}>
+          选购这件商品 ↗
+        </a>
+        <p>
+          <a href="/guide">配送与售后说明</a>
+        </p>
+      </div>
+    </div>
+  </article>
+</Layout>

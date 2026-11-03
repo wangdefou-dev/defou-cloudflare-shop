@@ -5,18 +5,19 @@ import Layout from '../layouts/Layout.astro';
 import { ORIGIN_LABEL } from '../lib/content';
 ---
 
-<Layout title={"隐私说明 · " + site.name} noindex>
+<Layout title={'隐私说明 · ' + site.name} noindex>
   <article class="policy section">
     <div class="eyebrow">YOUR INFORMATION, RESPECTED</div>
     <h1>把心意寄给你，也守护你的信息</h1>
     <p>
-      本网站由 {site.publisher} 运营。我们仅收集完成订单、发货、开票、认领预约和活动赞助所必要的信息，包括姓名、手机号、地址及申请内容。
+      本网站由 {site.publisher}{' '}
+      运营。我们仅收集完成订单、发货、开票、认领预约和活动赞助所必要的信息，包括姓名、手机号、地址及申请内容。
     </p>
     <h2>信息如何使用</h2>
     <p>
       收件信息仅用于发货、物流和售后；开票信息仅用于电子普通发票；活动信息用于人工审核。支付由
       Stripe
-      托管处理，我们不存储银行卡号。公开的苹果足迹仅展示城市级汇总，不包含姓名、电话或详细地址。
+      托管处理，我们不存储银行卡号。公开的配送足迹仅展示城市级汇总，不包含姓名、电话或详细地址。
     </p>
     <h2>谁可以访问</h2>
     <p>
@@ -31,7 +32,7 @@ import { ORIGIN_LABEL } from '../lib/content';
     </p>
     <h2>保存与删除</h2>
     <p>
-      发货季结束后，按法定留存要求保存必要订单及财务记录，其他详细地址计划脱敏处理。你可通过订单页联系运营，申请查询、更正或删除非必要个人信息。
+      订单履约完成后，按法定留存要求保存必要订单及财务记录，其他详细地址计划脱敏处理。你可通过订单页联系运营，申请查询、更正或删除非必要个人信息。
     </p>
     <h2>本地存储与图片</h2>
     <p>
@@ -50,13 +51,18 @@ import { ORIGIN_LABEL } from '../lib/content';
       统计选择在本机保存 90 天，可随时通过页脚「访问统计设置」关闭 Google
       访问统计；关闭后将清除本站设置的 Google 统计 Cookie，不影响下单。
     </p>
-    <h2>果园内容</h2>
+    {site.features.orchard && (
+      <>
+        <h2>果园内容</h2>
+        <p>
+          {site.name}的果园位于{ORIGIN_LABEL}
+          。果园介绍与采摘日记聚焦苹果和农事，不公开种植者的家庭住址、私人联系方式或具体定位。
+        </p>
+      </>
+    )}
     <p>
-      {site.name}的果园位于{ORIGIN_LABEL}
-      。果园介绍与采摘日记聚焦苹果和农事，不公开种植者的家庭住址、私人联系方式或具体定位。
-    </p>
-    <p>
-      本页更新于 {site.contentUpdated}。如需订单、发票或个人信息相关帮助，可通过站内「加我微信」入口联系运营。
+      本页更新于 {site.contentUpdated}
+      。如需订单、发票或个人信息相关帮助，可通过站内「加我微信」入口联系运营。
     </p>
   </article>
 </Layout>

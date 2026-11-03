@@ -24,6 +24,12 @@ for (const path of [...PUBLIC_PATHS, '/privacy']) {
   );
   assert(inlineCSS < 1024, `${path}: large inline stylesheet returned`);
   assert(html.includes('rel="stylesheet"'), `${path}: missing external CSS`);
+  assert(
+    html.includes('得否科技') &&
+      html.includes('得否开源') &&
+      html.includes('https://x.com/wangdefou'),
+    `${path}: open-source authorship missing`,
+  );
   assert(html.includes(site.publisher + '出品'), `${path}: publisher missing`);
   assert(!/href="\/admin(?:[\/?#"])/.test(html), `${path}: admin entry exposed in public HTML`);
   if (path !== '/privacy')

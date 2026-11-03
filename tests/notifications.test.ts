@@ -19,7 +19,7 @@ class MemoryD1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(fs.readFileSync('migrations/' + f, 'utf8'));
-    this.db.exec(fs.readFileSync('scripts/seed.sql', 'utf8'));
+    this.db.exec(fs.readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
     this.db.exec('UPDATE products SET stock=100');
   }
   prepare(sql: string) {
@@ -135,7 +135,7 @@ test('sponsor migration preserves paid delivery history and does not backfill ol
     .filter((f) => f.endsWith('.sql') && !f.startsWith('0006_'))
     .sort())
     db.exec(fs.readFileSync('migrations/' + f, 'utf8'));
-  db.exec(fs.readFileSync('scripts/seed.sql', 'utf8'));
+  db.exec(fs.readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
   db.exec('UPDATE products SET stock=100');
   application(db, 'historical');
   order(db, 'already-sent');
@@ -170,7 +170,7 @@ test('new FG purchase gets 15 boxes and PA still gets 8; existing paid rights re
   const old = new DatabaseSync(':memory:');
   for (const f of ['0001_initial.sql', '0002_safe_stock_refund.sql', '0003_retail_prices.sql'])
     old.exec(fs.readFileSync('migrations/' + f, 'utf8'));
-  old.exec(fs.readFileSync('scripts/seed.sql', 'utf8'));
+  old.exec(fs.readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
   old.exec('UPDATE products SET stock=100');
   order(old, 'old', 'FG', 1, 'adoption', 188800);
   paid(old, 'old');
@@ -232,7 +232,7 @@ test('daily report matches the requested template and accumulates since launch t
   assert.equal(
     message,
     [
-      '「示例果园」上线第2天',
+      '「示例商店」上线第2天',
       'https://shop.example.com/',
       '',
       '累计订单量：6 单',

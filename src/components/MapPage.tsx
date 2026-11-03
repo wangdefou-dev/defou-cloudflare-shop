@@ -1,3 +1,4 @@
+import site from '../../config/site.json';
 import { useEffect, useRef, useState } from 'react';
 import { MapPin, Pause, Play, RefreshCw, ZoomIn, ZoomOut, RotateCcw, X } from 'lucide-react';
 import { ErrorBox, PageIntro } from './ui';
@@ -24,9 +25,9 @@ const purchaseColor = '#b53a2c',
 const provincePalette = ['#dce7d2', '#b9cfa6', '#87ab77', '#507956'];
 const labels: Record<MapMode, string> = {
   all: '全部足迹',
-  orders: '购买与认领寄送',
-  sponsor: '请你吃苹果',
-  gift: '赠送苹果',
+  orders: site.features.orchard ? '购买与认领寄送' : '商品寄送',
+  sponsor: '活动赞助',
+  gift: '赠送商品',
 };
 const sourceColor = (city: MapCity, mode: MapMode) => {
   if (mode === 'gift') return giftColor;
@@ -184,20 +185,22 @@ export default function MapPage() {
   };
   return (
     <div className="page-wrap footprint-page">
-      <PageIntro eyebrow="FROM THE MOUNTAINS, WITH LOVE" title="一箱一箱，点亮远方">
-        从示例产地出发，把山里的清甜，寄向真实的收货城市。
+      <PageIntro eyebrow="FROM OUR SHOP, TO YOUR CITY" title="每一次寄送，连接远方">
+        从商店出发，把商品寄向真实的收货城市。
         <br />
-        每一条连接，都记录着购买、认领寄送、社区赞助或赠送的心意。
+        每一条连接，都记录着商品从商店寄往收件城市的旅程。
       </PageIntro>
       <div className="map-stats footprint-stats" aria-live="polite">
         <div>
           <strong>{data.updated_at ? total : '—'}</strong>
-          <span>箱苹果的旅程</span>
+          <span>件商品的旅程</span>
         </div>
-        <div>
-          <strong>{data.updated_at ? data.adoption_trees : '—'}</strong>
-          <span>棵本季果树已认领</span>
-        </div>
+        {site.features.orchard && (
+          <div>
+            <strong>{data.updated_at ? data.adoption_trees : '—'}</strong>
+            <span>次认领（扩展模块）</span>
+          </div>
+        )}
         <div>
           <strong>{data.updated_at ? nationalCities.length : '—'}</strong>
           <span>座城市被连接</span>
@@ -217,19 +220,21 @@ export default function MapPage() {
       </div>
       <div className="footprint-toolbar">
         <div className="tab-bar map-tabs" role="group" aria-label="足迹来源">
-          {(Object.entries(labels) as [MapMode, string][]).map(([value, label]) => (
-            <button
-              key={value}
-              className={mode === value ? 'selected' : ''}
-              aria-pressed={mode === value}
-              onClick={() => {
-                setMode(value);
-                setSelectedCode('');
-              }}
-            >
-              {label}
-            </button>
-          ))}
+          {(Object.entries(labels) as [MapMode, string][])
+            .filter(([mode]) => site.features.orchard || ['all', 'orders'].includes(mode))
+            .map(([value, label]) => (
+              <button
+                key={value}
+                className={mode === value ? 'selected' : ''}
+                aria-pressed={mode === value}
+                onClick={() => {
+                  setMode(value);
+                  setSelectedCode('');
+                }}
+              >
+                {label}
+              </button>
+            ))}
         </div>
         <div className="footprint-actions">
           <div className="footprint-zoom" role="group" aria-label="地图缩放">
@@ -276,7 +281,7 @@ export default function MapPage() {
               <span>
                 {selectedProvince
                   ? data.updated_at
-                    ? `${provinceTotals.get(provinceCode) || 0} 箱 · ${cities.length} 座城市`
+                    ? `${provinceTotals.get(provinceCode) || 0} 件 · ${cities.length} 座城市`
                     : '正在读取城市足迹…'
                   : '点击省份，看看心意去了哪里'}
               </span>
@@ -334,7 +339,7 @@ export default function MapPage() {
                           role="button"
                           tabIndex={0}
                           aria-pressed={chosen}
-                          aria-label={`${province.name}，${data.updated_at ? qty + '箱' : '数据读取中'}，查看城市`}
+                          aria-label={`${province.name}，${data.updated_at ? qty + '件' : '数据读取中'}，查看城市`}
                           className={
                             'footprint-province' +
                             (chosen ? ' is-selected' : '') +
@@ -353,7 +358,7 @@ export default function MapPage() {
                           }}
                         >
                           <title>
-                            {province.name} · {data.updated_at ? qty + ' 箱' : '数据读取中'} ·
+                            {province.name} · {data.updated_at ? qty + ' 件' : '数据读取中'} ·
                             点击查看城市
                           </title>
                           <path
@@ -469,7 +474,7 @@ export default function MapPage() {
                               role="button"
                               tabIndex={0}
                               aria-pressed={selectedCode === city.city_code}
-                              aria-label={cityName(city) + '，' + cityQuantity(city, mode) + '箱'}
+                              aria-label={cityName(city) + '，' + cityQuantity(city, mode) + '件'}
                               onMouseEnter={() => setHoverProvinceCode(city.province_code)}
                               onMouseLeave={() => setHoverProvinceCode('')}
                               onFocus={() => setFocusedProvinceCode(city.province_code)}
@@ -487,7 +492,7 @@ export default function MapPage() {
                                   cityName(city) +
                                   ' · ' +
                                   cityQuantity(city, mode) +
-                                  ' 箱'}
+                                  ' 件'}
                               </title>
                               <circle cx={point.x} cy={point.y} r="17" fill="transparent" />
                               <circle
@@ -519,7 +524,7 @@ export default function MapPage() {
                                   vectorEffect="non-scaling-stroke"
                                 >
                                   {cityName(city)}
-                                  {selectedCode ? '' : ` ${cityQuantity(city, mode)}箱`}
+                                  {selectedCode ? '' : ` ${cityQuantity(city, mode)}件`}
                                 </text>
                               )}
                             </g>
@@ -570,12 +575,12 @@ export default function MapPage() {
           <div className="footprint-map-key">
             <span className="footprint-province-hover">
               {hoveredProvince
-                ? `${hoveredProvince.name} · ${data.updated_at ? (provinceTotals.get(hoveredProvince.code) || 0) + ' 箱' : '数据读取中'}`
+                ? `${hoveredProvince.name} · ${data.updated_at ? (provinceTotals.get(hoveredProvince.code) || 0) + ' 件' : '数据读取中'}`
                 : data.updated_at
-                  ? '省份底色随当前来源的真实箱数变化'
+                  ? '省份底色随当前来源的真实数量变化'
                   : '正在读取城市汇总，暂不显示分布'}
             </span>
-            <div className="footprint-scale" aria-label="省份颜色越深，箱数越多">
+            <div className="footprint-scale" aria-label="省份颜色越深，数量越多">
               <i className="empty" />
               暂无足迹
               <span className="footprint-scale-swatches">
@@ -593,12 +598,14 @@ export default function MapPage() {
                 <strong>{selected.region_label.split(' / ').join(' · ')}</strong>
                 <p>
                   {mode === 'gift' ? '赠送 ' : ''}
-                  {cityQuantity(selected, mode)} 箱
+                  {cityQuantity(selected, mode)} 件
                   {mode === 'all'
-                    ? `，购买 ${selected.boxes} 箱，认领预约 ${selected.adopted} 箱，社区赞助 ${selected.sponsored} 箱，赠送 ${selected.gifted ?? 0} 箱`
+                    ? site.features.orchard
+                      ? `，购买 ${selected.boxes} 件，认领预约 ${selected.adopted} 件，社区赞助 ${selected.sponsored} 件，赠送 ${selected.gifted ?? 0} 件`
+                      : `，购买 ${selected.boxes} 件`
                     : ''}
                 </p>
-                {!cityPoint(selected.city_code) && <p>城市坐标待补齐，箱数已计入统计</p>}
+                {!cityPoint(selected.city_code) && <p>城市坐标待补齐，数量已计入统计</p>}
               </div>
               <button onClick={() => setSelectedCode('')} aria-label="关闭城市信息">
                 <X size={18} />
@@ -654,7 +661,7 @@ export default function MapPage() {
                   </span>
                   <strong>
                     {cityQuantity(city, mode)}
-                    <small> 箱</small>
+                    <small> 件</small>
                   </strong>
                 </button>
               ))
@@ -671,7 +678,7 @@ export default function MapPage() {
           <div className="map-legend">
             <span>
               <i style={{ background: purchaseColor }} />
-              购买与认领寄送
+              商品寄送
             </span>
             <span>
               <i style={{ background: sponsorColor }} />
@@ -679,14 +686,14 @@ export default function MapPage() {
             </span>
             <span>
               <i style={{ background: giftColor }} />
-              赠送苹果
+              赠送商品
             </span>
           </div>
           <p className="footprint-status" role="status">
             {loading
               ? '正在更新城市汇总'
               : data.updated_at
-                ? '每分钟自动更新，点击城市查看箱数'
+                ? '每分钟自动更新，点击城市查看数量'
                 : '城市汇总暂未载入'}
             {missing > 0 && (
               <>
@@ -706,7 +713,7 @@ export default function MapPage() {
       <p className="fine-print centered footprint-map-note">
         仅展示真实收货城市的汇总，不展示姓名、电话、区县或门牌。飞线是城市间连接示意，不代表实际运输路线或快递实时位置。
         <br />
-        认领棵数按已付款的有效认领统计；旅程箱数在购买支付成功、认领预约生效、赞助发货、赠送确认寄出时计入。购买或认领整单退款扣除对应数量，坏果部分赔付不扣除。
+        认领棵数按已付款的有效认领统计；旅程数量在购买支付成功、认领预约生效、赞助发货、赠送确认寄出时计入。购买或认领整单退款扣除对应数量，坏果部分赔付不扣除。
       </p>
     </div>
   );

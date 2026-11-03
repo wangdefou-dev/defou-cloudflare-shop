@@ -64,7 +64,7 @@ export default function AdminCoupons() {
   return (
     <div className="admin-coupons">
       <p className="fine-print">
-        每单仅优惠一箱零售苹果；运费、果树认领不参与。一次性券可用一次，共用券按总次数限制。付款中订单占用名额并保留原优惠，停用只阻止新订单。列表只显示脱敏标记。
+        每单仅优惠一件零售商品；运费、果树认领不参与。一次性券可用一次，共用券按总次数限制。付款中订单占用名额并保留原优惠，停用只阻止新订单。列表只显示脱敏标记。
       </p>
       <AdminCouponCreator
         onCreated={() => {

@@ -1,0 +1,41 @@
+[
+  {
+    "sku": "NOTEBOOK",
+    "slug": "notebook",
+    "name": "日常笔记本",
+    "category": "文具",
+    "unit": "本",
+    "price": 3900,
+    "specification": "A5 · 80页 · 米白内页",
+    "description": "用来记录想法、计划与日常的小本子。此为演示商品，请替换为自己的真实商品资料。",
+    "image": "/images/demo/notebook.svg",
+    "active": true,
+    "maxPerOrder": 20
+  },
+  {
+    "sku": "TOTE",
+    "slug": "canvas-tote",
+    "name": "帆布手提袋",
+    "category": "服饰配件",
+    "unit": "个",
+    "price": 6900,
+    "specification": "原色 · 38 × 42cm",
+    "description": "通勤和周末都能带上的帆布袋。此为演示商品，具体规格以经营者确认的信息为准。",
+    "image": "/images/demo/tote.svg",
+    "active": true,
+    "maxPerOrder": 10
+  },
+  {
+    "sku": "MUG",
+    "slug": "ceramic-mug",
+    "name": "陶瓷马克杯",
+    "category": "生活用品",
+    "unit": "只",
+    "price": 5900,
+    "specification": "白色 · 350mL",
+    "description": "一只适合放在桌边的日用杯。此为演示商品，上线前请核实材质、容量及售后规则。",
+    "image": "/images/demo/mug.svg",
+    "active": true,
+    "maxPerOrder": 12
+  }
+]

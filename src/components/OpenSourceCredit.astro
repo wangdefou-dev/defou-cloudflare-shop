@@ -1,0 +1,36 @@
+---
+import { OPEN_SOURCE_CREDIT as credit } from '../lib/credits';
+---
+
+<div class="open-source-credit" aria-label="开源作者">
+  <a href={credit.repository} target="_blank" rel="noopener noreferrer">
+    {credit.label}
+  </a>
+  <span>·</span>
+  <a href={credit.xUrl} target="_blank" rel="noopener noreferrer">
+    X {credit.xHandle}
+  </a>
+</div>
+<style>
+  .open-source-credit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 22px 20px;
+    font:
+      13px/1.6 system-ui,
+      sans-serif;
+    color: #526453;
+    background: #f1f1e9;
+    border-top: 1px solid #dce0d3;
+  }
+  .open-source-credit a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .open-source-credit a:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -130,7 +130,7 @@ export default function AdminCouponCreator({ onCreated }: { onCreated: () => voi
                       onChange={(e) => setName(e.currentTarget.value)}
                     />
                   </Field>
-                  <Field label="折扣（折）" hint="8.8 折表示付原价的 88%，每码只优惠一箱">
+                  <Field label="折扣（折）" hint="8.8 折表示付原价的 88%，每码只优惠一件">
                     <input
                       type="number"
                       required

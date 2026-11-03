@@ -14,7 +14,7 @@ class D1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(readFileSync('migrations/' + file, 'utf8'));
-    this.db.exec(readFileSync('scripts/seed.sql', 'utf8'));
+    this.db.exec(readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
     this.db.exec('UPDATE products SET stock=100,active=1');
   }
   prepare(sql: string) {

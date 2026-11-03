@@ -1,0 +1,72 @@
+---
+import site from '../../config/site.json';
+import Layout from '../layouts/Layout.astro';
+import { activeCatalog, productPath } from '../lib/catalog';
+import { OPEN_SOURCE_CREDIT as credit } from '../lib/credits';
+import { money } from '../lib/shared';
+const products = activeCatalog();
+---
+
+<Layout>
+  <section class="store-hero store-shell">
+    <p class="store-kicker">A SMALL SHOP, MANY POSSIBILITIES</p>
+    <h1>{site.storefront.headline}</h1>
+    <p>{site.storefront.description}</p>
+    <a class="button primary" href="/buy">
+      逛逛商品 ↗
+    </a>
+    <div class="store-promises">
+      <span>独立小店</span>
+      <span>明码标价</span>
+      <span>用心发货</span>
+    </div>
+    <p class="store-author">
+      <a href={credit.repository}>{credit.label}</a> ·{' '}
+      <a href={credit.xUrl} target="_blank" rel="noopener noreferrer">
+        X {credit.xHandle}
+      </a>
+    </p>
+  </section>
+  <section class="store-shell store-catalog" aria-labelledby="catalog-heading">
+    <div class="store-section-heading">
+      <div>
+        <p class="store-kicker">PICK SOMETHING YOU LIKE</p>
+        <h2 id="catalog-heading">店里的好物</h2>
+      </div>
+      <a href="/buy">选购全部 ↗</a>
+    </div>
+    <div class="store-grid">
+      {products.map((p) => (
+        <article class="store-card">
+          <a href={productPath(p)}>
+            <img src={p.image} alt={p.name} width="900" height="700" loading="lazy" />
+          </a>
+          <div>
+            <small>{p.category}</small>
+            <h3>
+              <a href={productPath(p)}>{p.name}</a>
+            </h3>
+            <p>{p.specification}</p>
+            <strong>
+              ¥{money(p.price)} <small>/ {p.unit}</small>
+            </strong>
+            <a class="store-card-buy" href={'/buy?sku=' + encodeURIComponent(p.sku)}>
+              选购 ↗
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+  <section class="store-shell store-service">
+    <div>
+      <p class="store-kicker">FROM OUR SHOP TO YOUR DOOR</p>
+      <h2>喜欢的东西，好好送到</h2>
+    </div>
+    <div>
+      <p>{site.storefront.shippingNote}</p>
+      <p>{site.storefront.afterSalesNote}</p>
+      <a href="/guide">了解配送与售后 ↗</a>
+    </div>
+  </section>
+</Layout>
