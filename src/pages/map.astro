@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+import MapPage from '../components/MapPage';
+---
+
+<Layout>
+  <MapPage client:media="(min-width: 1001px)" />
+</Layout>

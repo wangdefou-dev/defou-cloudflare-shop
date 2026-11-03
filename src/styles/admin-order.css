@@ -1,0 +1,210 @@
+.admin-order-dialog {
+  width: min(940px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 80px #18251d38;
+}
+.admin-order-dialog::backdrop {
+  background: #18251d85;
+}
+.admin-detail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--line);
+}
+.admin-detail-heading h2 {
+  font-size: 26px;
+  line-height: 1.4;
+}
+.admin-detail-heading p {
+  margin-top: 5px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.admin-detail-heading > div:last-child {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.admin-order-dialog .small-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+}
+.admin-detail-body {
+  padding: 24px 28px;
+  max-height: calc(100dvh - 156px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.admin-detail-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 0;
+}
+.admin-detail-section {
+  padding: 22px;
+  margin-bottom: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.admin-detail-section h3 {
+  font-size: 19px;
+  font-family: var(--sans);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.admin-detail-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.admin-detail-section-heading h3 {
+  margin: 0;
+}
+.admin-detail-section-heading > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 16px 0;
+}
+.admin-detail-grid dt,
+.admin-payment-reference dt {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+.admin-detail-grid dd,
+.admin-payment-reference dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.admin-detail-amount {
+  color: var(--red);
+  font-weight: 600;
+}
+.admin-detail-product {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.admin-detail-product p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+.admin-detail-shipment {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  margin-top: 16px;
+}
+.admin-detail-shipment > .small-button {
+  margin-top: 12px;
+}
+.admin-recipient p {
+  font-size: 15px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 8px;
+}
+.admin-recipient p:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 16px;
+}
+.admin-recipient .admin-gift-note {
+  border-left: 3px solid #b8c3a7;
+  padding-left: 12px;
+  color: var(--muted);
+}
+.admin-copy-icon {
+  margin-left: 8px;
+  padding: 6px;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.admin-detail-ship-form {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.admin-detail-ship-form > div:last-child {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.admin-payment-reference summary {
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 0;
+}
+.admin-payment-reference dl {
+  padding: 12px 0;
+}
+.admin-payment-reference dd {
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) {
+  .admin-order-dialog {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 10px;
+  }
+  .admin-detail-heading {
+    padding: 16px;
+    align-items: flex-start;
+  }
+  .admin-detail-heading h2 {
+    font-size: 22px;
+  }
+  .admin-detail-heading p {
+    font-size: 12px;
+  }
+  .admin-detail-heading .small-button {
+    padding: 7px;
+    min-width: 36px;
+  }
+  .admin-detail-body {
+    padding: 14px;
+    max-height: calc(100dvh - 128px);
+  }
+  .admin-detail-section,
+  .admin-detail-shipment {
+    padding: 14px;
+  }
+  .admin-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .admin-detail-shipment .admin-detail-section-heading {
+    align-items: flex-start;
+  }
+}

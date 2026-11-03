@@ -1,0 +1,37 @@
+{
+  "name": "示例果园",
+  "publisher": "示例运营者",
+  "originLabel": "示例产地",
+  "url": "https://shop.example.com",
+  "ownerXUrl": "",
+  "ownerWechat": "your_wechat_id",
+  "wechatQrUrl": "",
+  "twitterHandle": "",
+  "contentUpdated": "2026-11-03",
+  "season": {
+    "start": "2026-10-22",
+    "end": "2099-12-31",
+    "label": "一季好苹果"
+  },
+  "paymentProject": "orchard-shop",
+  "mapOrigin": {
+    "code": "320100",
+    "name": "南京（示例发货城市）"
+  },
+  "prices": {
+    "FAMILY": 10800,
+    "GIFT": 12800,
+    "PA": 88800,
+    "FG": 188800
+  },
+  "shipping": {
+    "remoteProvinces": [
+      "150000",
+      "460000",
+      "540000",
+      "630000",
+      "650000"
+    ],
+    "remoteFee": 2000
+  }
+}

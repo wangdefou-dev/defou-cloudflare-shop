@@ -1,0 +1,7 @@
+Map by amCharts.
+Source: https://www.amcharts.com/static/svg-maps/chinaLow.svg
+Official license statement: https://www.amcharts.com/svg-maps/china/
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+Derived output changes: path translation (+20,-100), Chinese province labels and administrative codes, per-province data colours and city connections. Credit and license link remain visible in the map footer. The province geometry is kept as separate complete paths.

@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+import Treat from '../components/Treat';
+---
+
+<Layout>
+  <Treat client:media="(min-width: 1001px)" />
+</Layout>

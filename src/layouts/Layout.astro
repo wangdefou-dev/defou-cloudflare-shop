@@ -1,0 +1,403 @@
+---
+import site from '../../config/site.json';
+import '../styles/global.css';
+import '../styles/mobile-commerce.css';
+import '../styles/navigation.css';
+import '../styles/visual-assets.css';
+import BrandLogo from '../components/BrandLogo.astro';
+import { prefix as regionPrefix } from '../lib/region-assets.json';
+import Analytics from '../components/Analytics.astro';
+import {
+  Apple,
+  ArrowUpRight,
+  Copy,
+  Menu,
+  MessageCircle,
+  ReceiptText,
+  ShieldCheck,
+  TreeDeciduous,
+  X,
+} from 'lucide-react';
+import { BRAND_IMAGE, SCENE_IMAGES, SHOP_IMAGES, imageDimensions } from '../lib/media';
+import { env } from 'cloudflare:workers';
+import {
+  PAGE_META,
+  PUBLIC_PATHS,
+  publicSearchEnabled,
+  canonicalUrl,
+  serializeJsonLd,
+  websiteGraph,
+  publisherTitle,
+  publisherDescription,
+} from '../lib/seo';
+import {
+  BRAND_NAME,
+  ORIGIN_LABEL,
+  PUBLIC_ORIGIN,
+  OWNER_X_URL,
+  OWNER_WECHAT,
+  WECHAT_QR,
+} from '../lib/content';
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  structuredData?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+const contactWechat = env.CONTACT_WECHAT || OWNER_WECHAT;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const meta = PAGE_META[path] || PAGE_META['/'];
+const {
+  title: rawTitle = meta.title,
+  description: rawDescription = meta.description,
+  image = meta.image || SHOP_IMAGES.FAMILY.src,
+  imageAlt = `${BRAND_NAME} · 山间果园的一季清甜`,
+  structuredData = [],
+  noindex = false,
+} = Astro.props;
+const title = publisherTitle(rawTitle);
+const description = publisherDescription(rawDescription);
+const shareSize = imageDimensions(image);
+const imagePreloads: { srcSet: string; sizes: string; media: string }[] = [];
+if (path === '/' && SCENE_IMAGES.ORCHARD.avifSrcSet)
+  imagePreloads.push({
+    srcSet: SCENE_IMAGES.ORCHARD.avifSrcSet,
+    sizes: '100vw',
+    media: '(min-width: 1001px)',
+  });
+if (['/', '/buy', '/tree'].includes(path) && SHOP_IMAGES.FAMILY.avifSrcSet) {
+  const first = path === '/tree' ? SHOP_IMAGES.PA : SHOP_IMAGES.FAMILY;
+  imagePreloads.push({
+    srcSet: first.avifSrcSet,
+    sizes: '(max-width: 360px) 75px, 92px',
+    media: '(max-width: 1000px)',
+  });
+  if (path !== '/')
+    imagePreloads.push({
+      srcSet: first.avifSrcSet,
+      sizes: '(max-width: 1200px) 220px, 270px',
+      media: '(min-width: 1001px)',
+    });
+}
+if ((path === '/apples/family' || path === '/apples/gift') && SHOP_IMAGES.FAMILY.avifSrcSet) {
+  const first = path.endsWith('/gift') ? SHOP_IMAGES.GIFT : SHOP_IMAGES.FAMILY;
+  imagePreloads.push({
+    srcSet: first.avifSrcSet,
+    sizes: '(max-width: 1200px) 50vw, 640px',
+    media: '(min-width: 1001px)',
+  });
+}
+const publicPage = PUBLIC_PATHS.includes(path);
+const indexable =
+  publicPage && !noindex && Astro.response.status === 200 && publicSearchEnabled(env, Astro.url);
+const robots = indexable ? 'index,follow,max-image-preview:large' : 'noindex,nofollow,noarchive';
+Astro.response.headers.set('X-Robots-Tag', robots);
+const canonical = canonicalUrl(path);
+const graph =
+  publicPage && !noindex ? [...websiteGraph(path, title, description), ...structuredData] : [];
+const links = [
+  ['/', '首页'],
+  ['/buy', '买苹果'],
+  ['/tree', '认领苹安树'],
+  ['/treat', '请你吃苹果'],
+  ['/map', '苹果足迹'],
+];
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    {['/', '/buy', '/tree'].includes(path) && <script
+      is:inline
+      define:vars={{ shopPath: path, regionPrefix }}
+    >
+      (() => {
+        if (shopPath === '/' && !window.matchMedia('(max-width: 1000px)').matches) return;
+        window.__orchardPublicData = {};
+        for (const path of shopPath === '/tree' ? ['/config'] : ['/config', '/regions']) {
+          window.__orchardPublicData[path] = fetch(
+            path === '/regions' ? regionPrefix + 'root.json' : '/api' + path,
+            {
+              cache: path === '/regions' ? 'force-cache' : 'no-store',
+              credentials: path === '/regions' ? 'omit' : 'same-origin',
+              priority: 'low',
+            },
+          )
+            .then((response) => (response.ok ? response.json() : null))
+            .catch(() => null);
+        }
+      })();
+    </script>}
+    <meta name="description" content={description} />
+    {publicPage && <meta name="keywords" content={meta.keywords.join(',')} />}
+    <meta name="application-name" content={BRAND_NAME} />
+    <meta name="apple-mobile-web-app-title" content={BRAND_NAME} />
+    <meta name="theme-color" content="#243c2d" />
+    <meta name="robots" content={robots} />
+    {publicPage && <link rel="canonical" href={canonical} />}
+    {publicPage && (
+      <>
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={BRAND_NAME} />
+        <meta property="og:locale" content="zh_CN" />
+        {publicPage && <meta property="og:url" content={canonical} />}
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={PUBLIC_ORIGIN + image} />
+        <meta property="og:image:width" content={String(shareSize.width)} />
+        <meta property="og:image:height" content={String(shareSize.height)} />
+        <meta property="og:image:alt" content={imageAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        {site.twitterHandle && <meta name="twitter:site" content={site.twitterHandle} />}
+        {site.twitterHandle && <meta name="twitter:creator" content={site.twitterHandle} />}
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={PUBLIC_ORIGIN + image} />
+        <meta name="twitter:image:alt" content={imageAlt} />
+      </>
+    )}
+    {indexable && env.GOOGLE_SITE_VERIFICATION && (
+      <meta name="google-site-verification" content={env.GOOGLE_SITE_VERIFICATION} />
+    )}
+    {indexable && env.BING_SITE_VERIFICATION && (
+      <meta name="msvalidate.01" content={env.BING_SITE_VERIFICATION} />
+    )}
+    {graph.length > 0 && (
+      <script
+        type="application/ld+json"
+        set:html={serializeJsonLd({ '@context': 'https://schema.org', '@graph': graph })}
+      />
+    )}
+    {imagePreloads.map((preload) => (
+      <link
+        rel="preload"
+        as="image"
+        type="image/avif"
+        href={preload.srcSet.split(',').at(-1)!.trim().split(' ')[0]}
+        imagesrcset={preload.srcSet}
+        imagesizes={preload.sizes}
+        media={preload.media}
+        fetchpriority="high"
+      />
+    ))}
+    <link rel="icon" href={BRAND_IMAGE.favicon} sizes="any" />
+    <title>{title}</title>
+  </head>
+  <body
+    class:list={{
+      'mobile-commerce': ['/', '/buy', '/tree'].includes(path),
+    }}
+  >
+    <div class="mobile-season mobile-only">
+      {ORIGIN_LABEL} <span>{site.season.label}</span>
+    </div>
+    <div class="season-bar desktop-only">
+      <span>{site.season.label}</span>
+      <span class="season-dot"></span>
+      <span>销售期：{site.season.start} 至 {site.season.end}</span>
+    </div>
+    <header class="site-header">
+      <div class="header">
+        <a href="/" class="brand" aria-label={`${BRAND_NAME} 首页`}>
+          <BrandLogo />
+        </a>
+        <nav id="nav" aria-label="主导航">
+          {links.map(([url, label]) => (
+            <a
+              href={url}
+              class:list={{ active: path === url }}
+              aria-current={path === url ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div class="header-actions">
+          <a class="order-link" href="/order">
+            <ReceiptText size={18} aria-hidden="true" />
+            查订单
+          </a>
+          <a class="nav-buy" href="/buy">
+            带一箱秋天回家 <ArrowUpRight size={17} aria-hidden="true" />
+          </a>
+          <button
+            class="menu-toggle"
+            aria-label="展开导航"
+            aria-expanded="false"
+            aria-controls="nav"
+          >
+            <Menu size={22} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+      <div class="mobile-only mobile-nav-bar">
+        <nav class="mobile-shop-tabs" aria-label="选购类型">
+          <a
+            href="/buy"
+            aria-current={
+              path === '/' || path === '/buy' || path.startsWith('/apples/') ? 'page' : undefined
+            }
+          >
+            <Apple size={17} aria-hidden="true" /> 买苹果
+          </a>
+          <a
+            href="/tree"
+            aria-current={path === '/tree' || path === '/tree/my' ? 'page' : undefined}
+          >
+            <TreeDeciduous size={17} aria-hidden="true" /> 认领果树
+          </a>
+        </nav>
+      </div>
+    </header>
+    <main id="main-content">
+      <slot />
+    </main>
+    <footer class="mobile-only mobile-footer">
+      <h2>订单与服务</h2>
+      <p>快递配送 · 用心挑选 · 坏果按个赔</p>
+      <nav aria-label="购买帮助">
+        <a href="/order">
+          <ReceiptText size={19} aria-hidden="true" />
+          订单与售后
+        </a>
+        <a href="/tree/my">
+          <TreeDeciduous size={19} aria-hidden="true" />
+          我的果树
+        </a>
+        <button type="button" data-wechat-open aria-haspopup="dialog" aria-controls="wechat-dialog">
+          <MessageCircle size={19} aria-hidden="true" />
+          联系微信
+        </button>
+        <a href="/privacy">
+          <ShieldCheck size={19} aria-hidden="true" />
+          隐私说明
+        </a>
+      </nav>
+      <small>© {new Date().getFullYear()} {site.publisher}</small>
+    </footer>
+    <footer class="desktop-only site-footer">
+      <div class="footer-top">
+        <div class="footer-story">
+          <a href="/" class="footer-brand">
+            <BrandLogo footer />
+            <span>把山里的秋天，寄给你。</span>
+          </a>
+        </div>
+        <nav class="footer-nav" aria-label="页脚导航">
+          <div>
+            <h2>选购苹果</h2>
+            <a href="/buy">买苹果</a>
+            <a href="/tree">认领果树</a>
+            <a href="/guide">选购与配送指南</a>
+          </div>
+          <div>
+            <h2>订单服务</h2>
+            <a href="/order">订单与售后</a>
+            <a href="/tree/my">我的果树</a>
+            <a href="/privacy">隐私说明</a>
+          </div>
+          <div>
+            <h2>联系客服</h2>
+            {OWNER_X_URL && <a href={OWNER_X_URL} target="_blank" rel="noopener noreferrer">
+              我的主页 <ArrowUpRight size={15} aria-hidden="true" />
+            </a>}
+            <button class="footer-contact" type="button" data-wechat-open>
+              加我微信 <MessageCircle size={16} aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span>© {new Date().getFullYear()} {site.publisher} · {BRAND_NAME}</span>
+        <span>一季一相逢。</span>
+      </div>
+    </footer>
+    {publicSearchEnabled(env, Astro.url) && (
+      <Analytics
+        googleId={env.GOOGLE_ANALYTICS_ID}
+        cloudflareToken={env.CLOUDFLARE_ANALYTICS_TOKEN}
+        track={indexable}
+      />
+    )}
+    <button
+      class="wechat-entry"
+      type="button"
+      data-wechat-open
+      aria-haspopup="dialog"
+      aria-controls="wechat-dialog"
+    >
+      <MessageCircle size={21} aria-hidden="true" />
+      加我微信
+    </button>
+    <dialog id="wechat-dialog" class="wechat-dialog" aria-labelledby="wechat-title">
+      <button type="button" class="wechat-close" aria-label="关闭微信联系方式">
+        <X size={21} aria-hidden="true" />
+      </button>
+      <h2 id="wechat-title">加我微信</h2>
+      {WECHAT_QR.src && <img
+        class="wechat-qr"
+        src={WECHAT_QR.src}
+        width={WECHAT_QR.width}
+        height={WECHAT_QR.height}
+        alt="客服微信二维码"
+        loading="lazy"
+        decoding="async"
+      />}
+      <p class="wechat-id">
+        <span>微信号：</span>
+        <strong id="wechat-account">{contactWechat}</strong>
+      </p>
+      <button type="button" class="button primary wechat-copy">
+        <Copy size={17} aria-hidden="true" /> 复制微信号
+      </button>
+      <p class="wechat-copy-status" role="status" aria-live="polite"></p>
+    </dialog>
+    <script>
+      const b = document.querySelector('.menu-toggle');
+      b?.addEventListener('click', () => {
+        const open = b.getAttribute('aria-expanded') !== 'true';
+        b.setAttribute('aria-expanded', String(open));
+        document.getElementById('nav')?.classList.toggle('open', open);
+      });
+      const dialog = document.querySelector<HTMLDialogElement>('#wechat-dialog');
+      const copyButton = document.querySelector<HTMLButtonElement>('.wechat-copy');
+      const copyStatus = document.querySelector<HTMLElement>('.wechat-copy-status');
+      document.querySelectorAll<HTMLButtonElement>('[data-wechat-open]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (copyStatus) copyStatus.textContent = '';
+          dialog?.showModal();
+        });
+      });
+      document.querySelector('.wechat-close')?.addEventListener('click', () => dialog?.close());
+      dialog?.addEventListener('click', (event) => {
+        const rect = dialog.getBoundingClientRect();
+        if (
+          event.target === dialog &&
+          (event.clientX < rect.left ||
+            event.clientX > rect.right ||
+            event.clientY < rect.top ||
+            event.clientY > rect.bottom)
+        )
+          dialog.close();
+      });
+      copyButton?.addEventListener('click', async () => {
+        const account = document.getElementById('wechat-account');
+        if (!account || !copyStatus) return;
+        try {
+          await navigator.clipboard.writeText(account.textContent?.trim() || '');
+          copyStatus.textContent = '微信号已复制，去微信添加朋友吧';
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(account);
+          window.getSelection()?.removeAllRanges();
+          window.getSelection()?.addRange(range);
+          copyStatus.textContent = '请长按或选中上方微信号，手动复制';
+        }
+      });
+    </script>
+  </body>
+</html>

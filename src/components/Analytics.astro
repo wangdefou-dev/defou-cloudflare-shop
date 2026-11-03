@@ -1,0 +1,237 @@
+---
+import { validGoogleId, validCloudflareToken } from '../lib/analytics';
+interface Props {
+  googleId?: string;
+  cloudflareToken?: string;
+  track: boolean;
+}
+const google = validGoogleId(Astro.props.googleId);
+const cloudflare = validCloudflareToken(Astro.props.cloudflareToken);
+const { track } = Astro.props;
+---
+
+<div
+  id="site-analytics"
+  data-google={google}
+  data-cloudflare={cloudflare}
+  data-track={String(track)}
+>
+  {google && (
+    <>
+      <button class="analytics-settings" type="button" data-analytics-settings>
+        访问统计设置
+      </button>
+      <aside class="analytics-choice" aria-label="可选访问统计" hidden>
+        <p>
+          允许 Google 访问统计，帮助我们改善选购体验？<a href="/privacy#analytics">隐私说明</a>
+        </p>
+        <div>
+          <button type="button" data-analytics-choice="denied">
+            暂不允许
+          </button>
+          <button type="button" data-analytics-choice="granted">
+            允许统计
+          </button>
+        </div>
+      </aside>
+      <p class="analytics-feedback" role="status" hidden></p>
+    </>
+  )}
+</div>
+<script>
+  import {
+    analyticsPage,
+    analyticsReferrer,
+    readAnalyticsChoice,
+    ANALYTICS_CHOICE_KEY,
+  } from '../lib/analytics';
+  const root = document.getElementById('site-analytics');
+  if (root) {
+    const page = root.dataset.track === 'true' ? analyticsPage(location.href) : null;
+    const referrer = analyticsReferrer(document.referrer);
+    const google = root.dataset.google || '';
+    const cloudflare = root.dataset.cloudflare || '';
+    const box = root.querySelector<HTMLElement>('.analytics-choice');
+    const feedback = root.querySelector<HTMLElement>('.analytics-feedback');
+    const choice = () => {
+      try {
+        return readAnalyticsChoice(localStorage.getItem(ANALYTICS_CHOICE_KEY));
+      } catch {
+        return null;
+      }
+    };
+    type AnalyticsWindow = Window & {
+      dataLayer?: unknown[];
+      [key: `ga-disable-${string}`]: boolean;
+    };
+    const analyticsWindow = window as unknown as AnalyticsWindow;
+    const gtag = (..._args: unknown[]) => {
+      analyticsWindow.dataLayer ||= [];
+      analyticsWindow.dataLayer.push(argumentsFrom(_args));
+    };
+    // gtag.js expects Arguments objects in the data layer, as in Google's official snippet.
+    function argumentsFrom(args: unknown[]) {
+      return (function (..._values: unknown[]) {
+        return arguments;
+      })(...args);
+    }
+    let started = false;
+    const enableGoogle = () => {
+      if (!google || !page) return;
+      analyticsWindow[`ga-disable-${google}`] = false;
+      if (started) {
+        gtag('consent', 'update', { analytics_storage: 'granted' });
+        return;
+      }
+      started = true;
+      gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+      });
+      gtag('consent', 'update', { analytics_storage: 'granted' });
+      gtag('js', new Date());
+      const safePage = {
+        page_location: page.location,
+        page_referrer: referrer.origin,
+        page_title: document.title,
+      };
+      gtag('config', google, {
+        ...safePage,
+        send_page_view: false,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false,
+        cookie_domain: new URL(page.location).hostname,
+        cookie_prefix: 'orchard',
+        cookie_expires: 90 * 86400,
+      });
+      gtag('event', 'page_view', safePage);
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${google}`;
+      script.referrerPolicy = 'origin';
+      script.id = 'google-analytics-script';
+      document.head.appendChild(script);
+    };
+    const disableGoogle = () => {
+      analyticsWindow[`ga-disable-${google}`] = true;
+      // The disable flag prevents further hits on this document; the next navigation omits the tag.
+      if (started) gtag('consent', 'update', { analytics_storage: 'denied' });
+      for (const item of document.cookie.split(';')) {
+        const name = item.trim().split('=')[0];
+        if (!/^orchard_ga(?:_|$)/.test(name)) continue;
+        for (const domain of ['', location.hostname])
+          document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax; Secure${domain ? '; Domain=' + domain : ''}`;
+      }
+    };
+    if (page && google) {
+      if (choice() === 'granted') enableGoogle();
+      else if (!choice() && box) box.hidden = false;
+    }
+    root.querySelector('[data-analytics-settings]')?.addEventListener('click', () => {
+      if (box) box.hidden = !box.hidden;
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-analytics-choice]').forEach((button) =>
+      button.addEventListener('click', () => {
+        const value = button.dataset.analyticsChoice;
+        try {
+          localStorage.setItem(
+            ANALYTICS_CHOICE_KEY,
+            JSON.stringify({ choice: value, at: Date.now() }),
+          );
+        } catch {
+          /* choice still applies to this page */
+        }
+        if (value === 'granted') enableGoogle();
+        else disableGoogle();
+        if (box) box.hidden = true;
+        if (feedback) {
+          feedback.textContent = value === 'granted' ? '已允许访问统计' : '已关闭 Google 访问统计';
+          feedback.hidden = false;
+          setTimeout(() => {
+            feedback.hidden = true;
+          }, 3000);
+        }
+      }),
+    );
+    // Manual embedding only, with no SPA/form tracking and no sensitive URL or referrer.
+    if (page?.cloudflare && referrer.cloudflare && cloudflare) {
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+      script.dataset.cfBeacon = JSON.stringify({ token: cloudflare, spa: false });
+      script.referrerPolicy = 'origin';
+      document.head.appendChild(script);
+    }
+  }
+</script>
+<style>
+  .analytics-settings {
+    display: block;
+    margin: 0 auto 22px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 0;
+    color: #64715f;
+    font: inherit;
+    font-size: 14px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .analytics-choice,
+  .analytics-feedback {
+    position: fixed;
+    z-index: 70;
+    bottom: 24px;
+    left: 24px;
+    width: min(390px, calc(100vw - 32px));
+    box-sizing: border-box;
+    padding: 16px;
+    margin: 0;
+    border: 1px solid #cdd3c5;
+    border-radius: 12px;
+    background: #faf9f0;
+    color: #243c2d;
+    box-shadow: 0 6px 24px #243c2d1a;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  .analytics-choice p {
+    margin: 0 0 10px;
+  }
+  .analytics-choice a {
+    margin-left: 8px;
+    text-decoration: underline;
+  }
+  .analytics-choice div {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .analytics-choice button {
+    padding: 7px 14px;
+    border: 1px solid #ccd3c5;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .analytics-choice button[data-analytics-choice='granted'] {
+    background: #243c2d;
+    color: #fff;
+    border-color: #243c2d;
+  }
+  @media (max-width: 1000px) {
+    .analytics-choice,
+    .analytics-feedback {
+      left: 16px;
+      bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+      padding: 12px 14px;
+    }
+  }
+</style>

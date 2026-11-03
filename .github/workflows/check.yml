@@ -1,0 +1,25 @@
+name: Verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node scripts/prepare-region-assets.mjs --check
+      - run: npm run config:check
+      - run: npm run scan:public
+      - run: npm run check
+      - run: npm test
+      - run: npm run build:production
+      - run: npm audit --omit=dev --audit-level=high

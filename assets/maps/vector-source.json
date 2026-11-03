@@ -1,0 +1,16 @@
+{
+  "province_source": "https://www.amcharts.com/static/svg-maps/chinaLow.svg",
+  "province_source_sha256": "0ba1feb2c0d0075eb081ffbe4ce0f82863b8bcc5fb9f81ac65c566ea3aa0ea7f",
+  "province_license": "CC-BY-4.0",
+  "inset_source": "https://raw.githubusercontent.com/apache/echarts/6.0.0/src/coord/geo/fix/nanhai.ts",
+  "inset_source_sha256": "f26827848ed3caf96a7ba80886f0b5868e76178f26413c58938d0249be6c1f8a",
+  "inset_license": "Apache-2.0",
+  "inset_is_illustrative_screen_coordinates": true,
+  "generated_sha256": "e8ee4ee25397ceb4fdd9ff7ad020c6a45882061e0098d2ff7a1588fa3c1aebef",
+  "province_count": 34,
+  "decoration_count": 12,
+  "projection_matching_vertices": 4137,
+  "projection_max_residual_svg_pixels": 0.007,
+  "projection_reference_source": "https://cdn.amcharts.com/lib/5/geodata/json/chinaLow.json",
+  "changes": "Absolute province path translation (+20,-100), Chinese labels, codes, per-province data colours; independent illustrative sea inset scaled into screen box."
+}

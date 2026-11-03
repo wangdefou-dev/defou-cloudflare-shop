@@ -1,0 +1,65 @@
+{
+  "photos": {
+    "family": {
+      "src": "/images/demo/family.svg",
+      "thumbnail": "/images/demo/family.svg",
+      "width": 1200,
+      "height": 900,
+      "srcSet": "/images/demo/family.svg 1200w",
+      "avifSrcSet": "",
+      "placeholder": "/images/demo/family.svg"
+    },
+    "gift": {
+      "src": "/images/demo/gift.svg",
+      "thumbnail": "/images/demo/gift.svg",
+      "width": 1200,
+      "height": 900,
+      "srcSet": "/images/demo/gift.svg 1200w",
+      "avifSrcSet": "",
+      "placeholder": "/images/demo/gift.svg"
+    },
+    "peace": {
+      "src": "/images/demo/peace.svg",
+      "thumbnail": "/images/demo/peace.svg",
+      "width": 1200,
+      "height": 900,
+      "srcSet": "/images/demo/peace.svg 1200w",
+      "avifSrcSet": "",
+      "placeholder": "/images/demo/peace.svg"
+    },
+    "fortune": {
+      "src": "/images/demo/fortune.svg",
+      "thumbnail": "/images/demo/fortune.svg",
+      "width": 1200,
+      "height": 900,
+      "srcSet": "/images/demo/fortune.svg 1200w",
+      "avifSrcSet": "",
+      "placeholder": "/images/demo/fortune.svg"
+    },
+    "orchard": {
+      "src": "/images/demo/orchard.svg",
+      "thumbnail": "/images/demo/orchard.svg",
+      "width": 1200,
+      "height": 900,
+      "srcSet": "/images/demo/orchard.svg 1200w",
+      "avifSrcSet": "",
+      "placeholder": "/images/demo/orchard.svg"
+    },
+    "community": {
+      "src": "/images/demo/community.svg",
+      "thumbnail": "/images/demo/community.svg",
+      "width": 1200,
+      "height": 900,
+      "srcSet": "/images/demo/community.svg 1200w",
+      "avifSrcSet": "",
+      "placeholder": "/images/demo/community.svg"
+    }
+  },
+  "brand": {
+    "src": "/brand/icon.svg",
+    "srcSet": "/brand/icon.svg 100w",
+    "width": 100,
+    "height": 100,
+    "favicon": "/brand/icon.svg"
+  }
+}

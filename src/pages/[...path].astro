@@ -1,0 +1,33 @@
+---
+import site from '../../config/site.json';
+import Layout from '../layouts/Layout.astro';
+import MyTree from '../components/MyTree';
+import Order from '../components/Order';
+import Admin from '../components/Admin';
+const path = Astro.params.path || '';
+const titles: Record<string, string> = {
+  'tree/my': '我的苹安树',
+  order: '查订单',
+  'pay/result': '订单与支付结果',
+  admin: '果园运营台',
+};
+if (!titles[path]) Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+---
+
+<Layout title={(titles[path] || '页面未找到') + ' · ' + site.name} noindex>
+  {path === 'tree/my' && <MyTree client:load />}
+  {(path === 'order' || path === 'pay/result') && (
+    <Order result={path === 'pay/result'} client:load />
+  )}
+  {path === 'admin' && <Admin client:load />}
+  {!titles[path] && (
+    <div class="section empty-state">
+      <span>404</span>
+      <h1>这条小路还没通到果园</h1>
+      <a href="/" class="button primary">
+        回到首页 ↗
+      </a>
+    </div>
+  )}
+</Layout>

@@ -1,0 +1,63 @@
+{
+  "name": "cloudflare-orchard-shop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && astro preview --host 127.0.0.1",
+    "build": "npm run config:check && astro build",
+    "build:production": "node scripts/build-production.mjs",
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check",
+    "test": "tsx --test tests/*.test.ts",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "db:seed": "wrangler d1 execute DB --local --file scripts/seed.sql",
+    "deploy": "npm run deploy:production",
+    "deploy:production": "npm run doctor -- --production && npm run build:production && wrangler deploy --env production",
+    "types": "wrangler types",
+    "verify:public": "node scripts/check-public-build.mjs",
+    "setup": "node scripts/setup.mjs",
+    "configure": "node scripts/configure.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "config:sync": "node scripts/config-sync.mjs",
+    "config:check": "node scripts/config-sync.mjs --check",
+    "db:regions": "wrangler d1 execute DB --local --file scripts/regions.sql",
+    "db:demo": "wrangler d1 execute DB --local --file scripts/demo-stock.sql",
+    "db:migrate:production": "wrangler d1 migrations apply DB --remote --env production",
+    "db:seed:production": "wrangler d1 execute DB --remote --env production --file scripts/seed.sql",
+    "db:regions:production": "wrangler d1 execute DB --remote --env production --file scripts/regions.sql",
+    "secrets:production": "wrangler secret bulk .secrets.production.json --env production",
+    "scan:public": "node scripts/scan-public.mjs",
+    "dev:pages": "astro dev --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "14.4.2",
+    "@astrojs/preact": "6.1.1",
+    "astro": "7.4.2",
+    "china-division": "^2.7.0",
+    "jose": "^6.0.0",
+    "lucide-react": "^1.0.0",
+    "preact": "11.0.1",
+    "react": "^19.2.0",
+    "stripe": "^23.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.0",
+    "@cloudflare/workers-types": "latest",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "node": "^24.22.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "wrangler": "^4.156.2"
+  },
+  "license": "MIT",
+  "description": "Cloudflare-native orchard storefront with checkout, tree adoption and operations dashboard",
+  "engines": {
+    "node": ">=24 <25"
+  }
+}

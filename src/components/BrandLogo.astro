@@ -1,0 +1,25 @@
+---
+import { BRAND_NAME } from '../lib/content';
+import { BRAND_IMAGE } from '../lib/media';
+interface Props {
+  footer?: boolean;
+}
+const { footer = false } = Astro.props;
+---
+
+<img
+  class="brand-logo"
+  src={BRAND_IMAGE.src}
+  srcset={BRAND_IMAGE.srcSet}
+  sizes={
+    footer
+      ? '210px'
+      : '(max-width: 360px) 138px, (max-width: 1000px) 148px, (max-width: 1150px) 180px, 200px'
+  }
+  width={BRAND_IMAGE.width}
+  height={BRAND_IMAGE.height}
+  alt={BRAND_NAME}
+  loading={footer ? 'lazy' : 'eager'}
+  fetchpriority={footer ? 'auto' : 'high'}
+  decoding="async"
+/>

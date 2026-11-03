@@ -1,0 +1,31 @@
+{
+  "kind": "vector",
+  "width": 1024,
+  "height": 780,
+  "source_label": "amCharts",
+  "source_url": "https://www.amcharts.com/svg-maps/china/",
+  "license_url": "/images/maps/licenses.txt",
+  "projection": {
+    "kind": "mercator",
+    "x_scale": 15.682741023224601,
+    "x_offset": -1133.5864005025646,
+    "y_scale": -898.5548146353059,
+    "y_offset": 1024.4719037583016
+  },
+  "overlay": {
+    "bounds": [
+      0,
+      0,
+      1024,
+      780
+    ],
+    "exclusions": [
+      [
+        830,
+        530,
+        950,
+        700
+      ]
+    ]
+  }
+}

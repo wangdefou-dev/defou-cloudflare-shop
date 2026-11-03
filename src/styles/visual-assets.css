@@ -1,0 +1,122 @@
+/* One line weight for UI icons; the filled apple is reserved for the brand mark. */
+.lucide {
+  flex-shrink: 0;
+  stroke-width: 1.75;
+  vertical-align: middle;
+}
+.brand > .brand-logo {
+  width: 200px;
+  height: auto;
+  flex-shrink: 0;
+}
+.site-footer .footer-brand > .brand-logo {
+  grid-column: 1 / -1;
+  width: 210px;
+  height: auto;
+}
+.season-bar > a,
+.text-link,
+.product-action,
+.footer-bottom > span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.site-footer .footer-nav a,
+.site-footer .footer-nav button {
+  gap: 7px;
+}
+.hero-source .source-icon,
+.promise-strip > div > span,
+.empty-diary > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.promise-strip > div > span {
+  color: #54734b;
+}
+.empty-diary > span {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #edf0e6;
+}
+.wechat-close {
+  display: grid;
+  place-items: center;
+}
+.responsive-picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  line-height: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.responsive-picture > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero-picture {
+  position: absolute;
+  inset: 0;
+}
+.product-photo {
+  aspect-ratio: 1;
+  height: auto;
+}
+.detail-image img,
+.guide-product img {
+  aspect-ratio: 1;
+}
+.sku-visual {
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  background: #f1efe6;
+  overflow: hidden;
+}
+.sku-visual img {
+  object-fit: contain;
+}
+.summary-picture {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.summary-picture img {
+  object-position: center;
+}
+@media (min-width: 1001px) and (max-width: 1150px) {
+  .brand > .brand-logo {
+    width: 180px;
+  }
+}
+@media (max-width: 1000px) {
+  .site-header .header {
+    padding-block: 6px;
+  }
+  .brand > .brand-logo {
+    width: 148px;
+    height: auto;
+  }
+  .mobile-nav-bar .mobile-shop-tabs a {
+    gap: 7px;
+  }
+  .mobile-shop-intro > a {
+    gap: 3px;
+  }
+  .mobile-offer > .product-picture {
+    border: 1px solid #263b2d0a;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+}
+@media (max-width: 360px) {
+  .brand > .brand-logo {
+    width: 138px;
+  }
+}

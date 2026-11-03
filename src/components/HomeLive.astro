@@ -1,0 +1,131 @@
+---
+import { ArrowUpRight, NotebookPen } from 'lucide-react';
+---
+
+<div id="home-live">
+  <section class="section journey-teaser">
+    <div>
+      <div class="eyebrow">04 / APPLES ON THEIR WAY</div>
+      <h2>
+        苹果在路上，
+        <br />
+        心意也是
+      </h2>
+      <p>
+        从山间果园出发，一箱一箱，点亮远方。
+        <br />
+        也许下一站，就是你在的城市。
+      </p>
+      <a href="/map" class="text-link">
+        看看苹果都去了哪里 <ArrowUpRight size={18} aria-hidden="true" />
+      </a>
+    </div>
+    <div class="journey-art">
+      <div class="postmark">
+        从山里寄出<small>FROM THE MOUNTAINS, TO YOU</small>
+      </div>
+      <div class="journey-stats" aria-live="polite">
+        <div>
+          <strong data-boxes>—</strong>
+          <span>箱苹果的旅程</span>
+        </div>
+        <div>
+          <strong data-cities>—</strong>
+          <span>座城市被连接</span>
+        </div>
+      </div>
+      <p>每一箱苹果，都是一份真实的心意。</p>
+    </div>
+  </section>
+  <section class="diary-section">
+    <div class="section-inner">
+      <div class="eyebrow">NOTES FROM THE ORCHARD</div>
+      <div class="section-heading">
+        <h2>果园里，今天发生的小事</h2>
+        <span class="small-muted">新鲜的消息，慢慢更新</span>
+      </div>
+      <div class="diary-grid" data-diary hidden></div>
+      <div class="empty-diary" data-empty-diary>
+        <span>
+          <NotebookPen size={32} aria-hidden="true" />
+        </span>
+        <p>
+          秋收的消息，正在慢慢整理。
+          <br />
+          <small>第一篇采摘日记，即将从山里寄来。</small>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+  import { journeyBoxes, type JourneyCounts } from '../lib/map-stats';
+  const root = document.getElementById('home-live');
+  if (root && matchMedia('(min-width: 1001px)').matches) {
+    const read = async <T,>(path: string): Promise<T> => {
+      const response = await fetch('/api' + path, { cache: 'no-store' });
+      if (!response.ok) throw Error('Public data unavailable');
+      return response.json() as Promise<T>;
+    };
+    const load = () => {
+      read<{ cities: JourneyCounts[] }>('/map')
+        .then((data) => {
+          if (!Array.isArray(data.cities)) return;
+          root.querySelector('[data-boxes]')!.textContent = String(
+            data.cities.reduce((sum, city) => sum + journeyBoxes(city), 0),
+          );
+          root.querySelector('[data-cities]')!.textContent = String(data.cities.length);
+        })
+        .catch(() => {});
+      read<{ photo_urls: string; date: string; text: string }[]>('/diary')
+        .then((posts) => {
+          if (!Array.isArray(posts) || !posts.length) return;
+          const grid = root.querySelector<HTMLElement>('[data-diary]')!;
+          for (const post of posts) {
+            const article = document.createElement('article');
+            let photos: unknown = [];
+            try {
+              photos = JSON.parse(post.photo_urls);
+            } catch {
+              /* No photo is safer than a broken post. */
+            }
+            if (Array.isArray(photos))
+              for (const src of photos) {
+                if (
+                  typeof src !== 'string' ||
+                  !/^\/media\/apple-2026\/[a-f0-9-]+\.(jpg|png|webp)$/.test(src)
+                )
+                  continue;
+                const image = document.createElement('img');
+                image.src = src;
+                image.alt = '果园采摘日记照片';
+                image.loading = 'lazy';
+                article.appendChild(image);
+              }
+            const time = document.createElement('time');
+            time.textContent = String(post.date || '');
+            const text = document.createElement('p');
+            text.textContent = String(post.text || '');
+            article.appendChild(time);
+            article.appendChild(text);
+            grid.appendChild(article);
+          }
+          grid.hidden = false;
+          root.querySelector<HTMLElement>('[data-empty-diary]')!.hidden = true;
+        })
+        .catch(() => {});
+    };
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            observer.disconnect();
+            load();
+          }
+        },
+        { rootMargin: '200px' },
+      );
+      observer.observe(root);
+    } else load();
+  }
+</script>

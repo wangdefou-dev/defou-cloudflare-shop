@@ -1,0 +1,113 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "orchard-shop",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "APP_ORIGIN": "http://localhost:4321",
+    "SITE_OFFLINE": "false",
+    "SALES_OPEN": "false",
+    "DEMO_MODE": "false",
+    "SANDBOX_CHECKOUT": "false",
+    "STRIPE_MODE": "sandbox",
+    "STRIPE_PAYMENT_METHOD_CONFIGURATION": "",
+    "MEDIA_BASE_URL": "",
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": "",
+    "TURNSTILE_SITE_KEY": "",
+    "CONTACT_WECHAT": "your_wechat_id",
+    "OFFICIAL_QR_URL": "",
+    "TRACKING_ENABLED": "false",
+    "NOTIFICATIONS_ENABLED": "false"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "orchard-shop",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "00000000000000000000000000000000"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "orchard-shop-media"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
+  },
+  "env": {
+    "production": {
+      "name": "orchard-shop",
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "run_worker_first": true
+      },
+      "vars": {
+        "APP_ORIGIN": "https://shop.example.com",
+        "SITE_OFFLINE": "false",
+        "SALES_OPEN": "false",
+        "DEMO_MODE": "false",
+        "SANDBOX_CHECKOUT": "false",
+        "STRIPE_MODE": "live",
+        "STRIPE_PAYMENT_METHOD_CONFIGURATION": "",
+        "MEDIA_BASE_URL": "",
+        "ACCESS_TEAM_DOMAIN": "",
+        "ACCESS_AUD": "",
+        "TURNSTILE_SITE_KEY": "",
+        "CONTACT_WECHAT": "your_wechat_id",
+        "OFFICIAL_QR_URL": "",
+        "TRACKING_ENABLED": "false",
+        "NOTIFICATIONS_ENABLED": "false"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "orchard-shop",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "CACHE",
+          "id": "00000000000000000000000000000000"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "MEDIA",
+          "bucket_name": "orchard-shop-media"
+        }
+      ],
+      "triggers": {
+        "crons": [
+          "*/5 * * * *"
+        ]
+      },
+      "workers_dev": true,
+      "preview_urls": false
+    }
+  }
+}

@@ -1,0 +1,79 @@
+.admin-coupon-creator {
+  margin: 24px 0;
+}
+.admin-coupon-create-body {
+  margin-top: 16px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.admin-coupon-create-body h3 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+.admin-coupon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+.admin-coupon-filters {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) minmax(115px, 1fr) minmax(110px, 1fr) auto auto;
+  align-items: end;
+  gap: 10px;
+  margin: 24px 0 12px;
+}
+.admin-coupon-filters .field {
+  margin: 0;
+  min-width: 0;
+}
+.admin-coupon-filters input,
+.admin-coupon-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.admin-coupon-filters > button {
+  min-height: 46px;
+  white-space: nowrap;
+}
+.admin-coupon-batches,
+.admin-coupon-restore,
+.admin-coupon-code-preview {
+  margin: 20px 0;
+}
+.admin-coupon-batches summary,
+.admin-coupon-restore summary,
+.admin-coupon-code-preview summary {
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 0;
+}
+.admin-coupon-code-preview textarea {
+  width: 100%;
+  margin-top: 10px;
+  font-family: monospace;
+  font-size: 14px;
+}
+.admin-coupons .admin-record {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.admin-coupons .record-main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .admin-coupon-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .admin-coupon-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-coupon-create-body {
+    padding: 16px;
+  }
+}
