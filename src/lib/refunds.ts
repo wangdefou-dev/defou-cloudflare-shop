@@ -1,5 +1,4 @@
-import site from '../../config/site.json';
-const PAYMENT_PROJECT = site.paymentProject;
+import { PAYMENT_PROJECT } from './payment-project';
 import Stripe from 'stripe';
 import { z } from 'zod';
 import { assert, HttpError } from './security';
@@ -428,7 +427,7 @@ export async function createAdminRefund(env: Env, actor: string, input: unknown)
         reason: row.reason,
         metadata: { project: PAYMENT_PROJECT, order_id: o.id, refund_request_id: row.request_id },
       },
-      { ...options, idempotencyKey: 'orchard-shop-refund-' + row.request_id },
+      { ...options, idempotencyKey: PAYMENT_PROJECT + '-refund-' + row.request_id },
     );
     await persistRefund(env, row, result);
   } catch (e) {

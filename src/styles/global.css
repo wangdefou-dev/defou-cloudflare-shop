@@ -4353,3 +4353,29 @@ footer {
     gap: 6px;
   }
 }
+
+/* Text logo used until a logo image is uploaded in the site settings. */
+.brand-text-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.brand-text-logo.footer {
+  font-size: 1.625rem;
+}
+.footer-credit {
+  margin: 14px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+}
+.footer-credit a {
+  margin-left: 4px;
+  color: inherit;
+}

@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 得否科技（Defou Tech）、得否（@wangdefou）及贡献者
+Copyright (c) 2026 得否科技
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Third-party map data and notices bundled in this repository keep their own licenses;
+see docs/第三方许可.md.

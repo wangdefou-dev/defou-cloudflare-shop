@@ -1,4 +1,4 @@
-import site from '../../config/site.json';
+import { STORE } from '../lib/store-config';
 import { regionChildren } from '../lib/region-data';
 import { checkoutRequest, rememberCheckoutOrder, finishCheckoutIntent } from './checkout-client';
 import { useEffect, useState, useRef, type ReactNode } from 'react';
@@ -370,7 +370,7 @@ export function InvoiceForm({
               onChange={(e) => onChange({ ...value, email: e.target.value })}
             />
           </Field>
-          <small>由 {site.publisher} 按实际资质开具，人工处理后发送到邮箱。</small>
+          <small>{`由${STORE.brand.publisher || STORE.brand.name}开具，人工处理后发送到邮箱。`}</small>
         </div>
       )}
     </>
@@ -382,11 +382,9 @@ declare global {
   }
 }
 export function Turnstile({
-  demo = false,
   siteKey,
   onToken,
 }: {
-  demo?: boolean;
   siteKey?: string;
   onToken: (t: string) => void;
 }) {
@@ -395,9 +393,7 @@ export function Turnstile({
   const [status, setStatus] = useState('loading');
   const [attempt, setAttempt] = useState(0);
   cb.current = onToken;
-  const localDemo = demo && typeof location !== 'undefined' && ['localhost','127.0.0.1','[::1]'].includes(location.hostname);
   useEffect(() => {
-    if (localDemo) { cb.current('local-demo'); return; }
     if (!siteKey) return;
     setStatus('loading');
     let widget: any,
@@ -464,8 +460,7 @@ export function Turnstile({
       window.removeEventListener('turnstile-reset', reset);
       if (widget !== undefined) window.turnstile?.remove(widget);
     };
-  }, [siteKey, attempt, localDemo]);
-  if (localDemo) return <p className="summary-note">本地演示 · 不会真实扣款</p>;
+  }, [siteKey, attempt]);
   return (
     <div className="challenge-wrap">
       <div className="challenge" ref={ref} />

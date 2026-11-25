@@ -1,17 +1,21 @@
-import catalog from '../../config/products.json';
-import site from '../../config/site.json';
 import { chinaDate, money } from './shared';
 import { PUBLIC_ORIGIN } from './public-site';
+import { STORE } from './store-config';
+// Schedule and launch date come from the site settings; old deploy variables are a fallback.
+const schedule = (env: Env) => ({
+  hour: String(STORE.notifications.dailyHour ?? env.NOTIFICATION_DAILY_HOUR ?? '0'),
+  minute: String(STORE.notifications.dailyMinute ?? env.NOTIFICATION_DAILY_MINUTE ?? '5'),
+  start: STORE.notifications.startDate || env.NOTIFICATION_START_DATE || '2026-10-22',
+});
 import type Stripe from 'stripe';
 
-const PRODUCTS: Record<string, { name: string; unit: string }> = {
+const PRODUCTS = {
   FAMILY: { name: '家庭装', unit: '箱' },
   GIFT: { name: '礼盒装', unit: '箱' },
   PA: { name: '平安树', unit: '棵' },
   FG: { name: '富贵树', unit: '棵' },
-  ...Object.fromEntries(catalog.map((p) => [p.sku, { name: p.name, unit: p.unit }])),
-};
-type ProductId = string;
+} as const;
+type ProductId = keyof typeof PRODUCTS;
 type PaidPayload = {
   order_no: string;
   type: 'retail' | 'adoption' | 'shipping';
@@ -83,7 +87,7 @@ export function paidOrderMessage(p: PaidPayload) {
     return product ? `${product.name} × ${i.qty} ${product.unit}` : '商品信息待核对';
   });
   return [
-    `📦 ${site.name}｜${kind}`,
+    `🍎 ${STORE.brand.name}｜${kind}`,
     `订单号：${p.order_no}`,
     ...(p.discount_amount
       ? [
@@ -104,7 +108,7 @@ export function sponsorApplicationMessage(p: SponsorPayload) {
   // Do not forward free-text fields: titles/reasons/links may contain contact
   // details. The reference lets the owner read the full application in Access.
   return [
-    `📦 ${site.name}｜新活动赞助申请`,
+    `🍎 ${STORE.brand.name}｜新活动赞助申请`,
     `申请编号：${p.app_no}`,
     `活动日期：${p.event_date}`,
     `预计人数：${p.headcount} 人`,
@@ -117,9 +121,9 @@ export function sponsorApplicationMessage(p: SponsorPayload) {
 
 export function refundResultMessage(p: RefundPayload) {
   const status = { succeeded: '退款成功', failed: '退款失败', canceled: '退款已取消' }[p.status];
-  const type = { retail: '商品零售', adoption: '果树认领', shipping: '补运费' }[p.order_type];
+  const type = { retail: '苹果零售', adoption: '果树认领', shipping: '补运费' }[p.order_type];
   return [
-    `📦 ${site.name}｜${status}`,
+    `🍎 ${STORE.brand.name}｜${status}`,
     `订单号：${p.order_no}`,
     `订单类型：${type}`,
     `订单实付：¥${money(p.paid_amount)}`,
@@ -207,7 +211,7 @@ export function chinaDayBounds(date: string) {
   );
 }
 export async function dailyReportMessage(env: Env, date: string, now = new Date()) {
-  const launchDate = env.NOTIFICATION_START_DATE || site.season.start;
+  const launchDate = schedule(env).start;
   const [start] = chinaDayBounds(launchDate);
   const [, dayEnd] = chinaDayBounds(date);
   const reportDays =
@@ -234,20 +238,20 @@ export async function dailyReportMessage(env: Env, date: string, now = new Date(
     )
     SELECT p.id,COALESCE(i.qty,0) qty,COALESCE(i.amount,0) amount,t.orders,t.total_amount
     FROM products p LEFT JOIN items i ON i.product_id=p.id CROSS JOIN totals t
-    WHERE p.active=1 OR EXISTS(SELECT 1 FROM items WHERE product_id=p.id)`,
+    WHERE p.id IN ('FAMILY','GIFT','PA','FG')`,
   )
     .bind(start, end)
     .all<ProductSummary>();
   const totals = summary.results[0];
   return [
-    `「${site.name}」上线第${reportDays}天`,
+    `「${STORE.brand.name}」上线第${reportDays}天`,
     `${PUBLIC_ORIGIN}/`,
     '',
     `累计订单量：${totals?.orders || 0} 单`,
     `累计销售额：¥${money(totals?.total_amount || 0)}`,
     '',
-    ...summary.results.map((row) => {
-      const product = PRODUCTS[row.id] || { name: row.id, unit: '件' };
+    ...Object.entries(PRODUCTS).map(([id, product]) => {
+      const row = summary.results.find((item) => item.id === id);
       return `${product.name}：${row?.qty || 0} ${product.unit}，¥${money(row?.amount || 0)}`;
     }),
   ].join('\n');
@@ -255,12 +259,8 @@ export async function dailyReportMessage(env: Env, date: string, now = new Date(
 
 export async function enqueueDailyReport(env: Env, now = new Date()) {
   if (!notificationsReady(env)) return;
-  const date = dailyReportDate(
-    now,
-    env.NOTIFICATION_DAILY_HOUR || '0',
-    env.NOTIFICATION_DAILY_MINUTE || '5',
-  );
-  if (!date || date < (env.NOTIFICATION_START_DATE || site.season.start)) return;
+  const date = dailyReportDate(now, schedule(env).hour, schedule(env).minute);
+  if (!date || date < schedule(env).start) return;
   const id = 'daily-' + date;
   if (await env.DB.prepare('SELECT id FROM commerce_notifications WHERE id=?').bind(id).first())
     return;
@@ -384,7 +384,11 @@ export async function flushCommerceNotifications(
             : n.kind === 'refund_result'
               ? refundResultMessage(payload)
               : n.kind === 'operation_alert'
-                ? `📦 ${site.name}｜运营提醒\n` + payload.message + '\n' + PUBLIC_ORIGIN + '/admin'
+                ? `🍎 ${STORE.brand.name}｜运营提醒\n` +
+                  payload.message +
+                  '\n' +
+                  PUBLIC_ORIGIN +
+                  '/admin'
                 : payload.message;
       await sendTelegram(env, message, sender);
       await env.DB.prepare(

@@ -1,4 +1,5 @@
 interface Photo {
+  src?: string;
   srcSet: string;
   avifSrcSet: string;
   placeholder: string;
@@ -28,13 +29,23 @@ export default function ResponsivePhoto({
   return (
     <picture
       className={'responsive-picture ' + className}
-      style={{ backgroundImage: `url("${photo.placeholder}")`, backgroundPosition: position }}
+      style={{
+        backgroundImage: photo.placeholder ? `url("${photo.placeholder}")` : undefined,
+        backgroundPosition: position,
+      }}
     >
-      {photo.avifSrcSet && <source type="image/avif" media={media} srcSet={photo.avifSrcSet} sizes={sizes} />}
-      <source media={media} srcSet={photo.srcSet} sizes={sizes} />
+      {photo.avifSrcSet && (
+        <source type="image/avif" media={media} srcSet={photo.avifSrcSet} sizes={sizes} />
+      )}
+      {photo.srcSet && (
+        <source type="image/webp" media={media} srcSet={photo.srcSet} sizes={sizes} />
+      )}
       <img
         className={imageClassName}
-        src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+        // A store's own photo (config/store.json → images) has no prepared variants.
+        src={
+          photo.srcSet ? 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' : photo.src
+        }
         width={photo.width}
         height={photo.height}
         alt={photo.alt}

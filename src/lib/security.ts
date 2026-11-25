@@ -1,4 +1,3 @@
-import { PUBLIC_ORIGIN } from './public-site';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 export class HttpError extends Error {
   constructor(
@@ -22,11 +21,10 @@ export function isSandbox(env: Env, request: Request) {
   const host = new URL(request.url).hostname;
   return (
     env.SANDBOX_CHECKOUT === 'true' &&
-    new URL(request.url).origin !== PUBLIC_ORIGIN &&
     env.STRIPE_MODE === 'sandbox' &&
     /^(rk|sk)_test_/.test(env.STRIPE_SECRET_KEY || '') &&
     new URL(env.APP_ORIGIN).hostname === host &&
-    (new URL(env.APP_ORIGIN).protocol === 'https:' ||
+    (/^[a-z0-9-]+-sandbox\.[a-z0-9-]+\.workers\.dev$/.test(host) ||
       ['localhost', '127.0.0.1', '[::1]'].includes(host))
   );
 }
@@ -84,9 +82,27 @@ export async function human(env: Env, request: Request, token?: string) {
 }
 const jwks = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 export async function admin(env: Env, request: Request) {
+  // ADMIN_EMAIL may list several administrators separated by commas.
+  return accessEmail(env, request, env.ADMIN_EMAIL, '运营后台');
+}
+/**
+ * The site settings console (/admin/studio): page content, media, payment and domain status.
+ * Only STUDIO_EMAIL may enter — a separate list from the day-to-day operations admins.
+ */
+export async function studio(env: Env, request: Request) {
+  return accessEmail(env, request, env.STUDIO_EMAIL, '网站设置');
+}
+async function accessEmail(env: Env, request: Request, allowed: string | undefined, area: string) {
   if (isDemo(env, request)) return 'local-demo';
-  const adminEmail = env.ADMIN_EMAIL?.trim().toLowerCase();
-  assert(env.ACCESS_TEAM_DOMAIN && env.ACCESS_AUD && adminEmail, 503, '后台访问保护尚未配置');
+  const adminEmails = (allowed || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  assert(
+    env.ACCESS_TEAM_DOMAIN && env.ACCESS_AUD && adminEmails.length,
+    503,
+    area + '访问保护尚未配置',
+  );
   const issuer = 'https://' + env.ACCESS_TEAM_DOMAIN.replace(/^https:\/\//, '').replace(/\/$/, '');
   let keys = jwks.get(issuer);
   if (!keys) {
@@ -102,11 +118,11 @@ export async function admin(env: Env, request: Request) {
     );
     email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
   } catch {
-    throw new HttpError(401, '请通过 Cloudflare Access 登录运营后台');
+    throw new HttpError(401, '请通过 Cloudflare Access 登录' + area);
   }
   // The edge policy and the origin both restrict access to the named administrator.
   // An account-wide policy change or a valid service-token subject cannot grant admin rights.
-  assert(email && email === adminEmail, 403, '当前账号无后台访问权限');
+  assert(email && adminEmails.includes(email), 403, '当前账号无' + area + '访问权限');
   return email;
 }
 export function sameOrigin(request: Request) {

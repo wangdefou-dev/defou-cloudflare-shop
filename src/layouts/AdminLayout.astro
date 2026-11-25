@@ -1,0 +1,27 @@
+---
+// The admin is a work tool: no storefront header, footer, analytics or share metadata.
+import '../styles/global.css';
+import { clientStore } from '../lib/store-config';
+import { serializeJsonLd } from '../lib/seo';
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+Astro.response.headers.set('X-Robots-Tag', 'noindex,nofollow,noarchive,nosnippet');
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script is:inline set:html={'window.__STORE__=' + serializeJsonLd(clientStore())} />
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+    <meta name="theme-color" content="#1d2a22" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body class="admin-body-root">
+    <slot />
+  </body>
+</html>

@@ -1,6 +1,6 @@
-import site from '../../config/site.json';
+import { settings } from './database';
 import { assert, isDemo, isSandbox, digest } from './security';
-import { isSaleDay, SEASON_START, SEASON_END } from './shared';
+import { cnMonthDay, isSaleDay, SEASON_END, SEASON_START } from './shared';
 export async function validateAddress(env: Env, a: any) {
   const r = await env.DB.prepare(
     'SELECT adcode,name,level,parent_adcode FROM regions WHERE adcode IN (?,?,?)',
@@ -20,14 +20,15 @@ export async function validateAddress(env: Env, a: any) {
   a.district = d.name;
   return a;
 }
-export function openSales(env: Env, request: Request) {
+export async function openSales(env: Env, request: Request) {
   assert(
-    isDemo(env, request) ||
-      isSandbox(env, request) ||
-      (env.SALES_OPEN === 'true' && (!site.storefront.seasonal || isSaleDay())),
+    isDemo(env, request) || isSandbox(env, request) || (env.SALES_OPEN === 'true' && isSaleDay()),
     409,
-    `本季销售时间为 ${SEASON_START} 至 ${SEASON_END}`,
+    `本季销售时间为 ${cnMonthDay(SEASON_START)}至 ${cnMonthDay(SEASON_END)}`,
   );
+  // Operators can pause checkout from the admin without a deploy.
+  if (!isDemo(env, request) && !isSandbox(env, request))
+    assert(!(await settings(env)).sales_paused, 409, '店铺暂停接单，请稍后再来');
   if (!isDemo(env, request))
     assert(env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET, 503, '支付暂未开放');
 }

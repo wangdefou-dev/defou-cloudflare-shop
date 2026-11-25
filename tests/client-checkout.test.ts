@@ -28,7 +28,9 @@ test('checkout returns the payment handoff even when browser storage is blocked,
     globalThis.fetch = async (url, init) => {
       assert.equal(url, '/api/checkout');
       assert.equal(init?.method, 'POST');
-      const {request_id,...sent}=JSON.parse(String(init?.body));assert.match(request_id,/^[a-f0-9-]{36}$/);assert.deepEqual(sent,body);
+      const { request_id, ...sent } = JSON.parse(String(init?.body));
+      assert.match(request_id, /^[a-f0-9-]{36}$/);
+      assert.deepEqual(sent, body);
       return Response.json(handoff);
     };
     assert.deepEqual(await placeOrder(body), handoff);

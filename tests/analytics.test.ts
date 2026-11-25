@@ -22,7 +22,7 @@ test('measurement excludes private routes, unknown queries and non-production ho
   ])
     assert.equal(analyticsPage('https://shop.example.com' + path), null);
   assert.equal(analyticsPage('http://127.0.0.1:4321/'), null);
-  assert.equal(analyticsPage('https://orchard-shop-sandbox.example.workers.dev/'), null);
+  assert.equal(analyticsPage('https://defou-shop-sandbox.example.workers.dev/'), null);
   assert.deepEqual(analyticsPage('https://shop.example.com/buy?sku=FAMILY'), {
     location: 'https://shop.example.com/buy',
     path: '/buy',
@@ -57,7 +57,7 @@ test('analytics choices expire and invalid persisted values do not grant consent
     JSON.stringify({ choice: 'granted', at: now + 1 }),
   ])
     assert.equal(readAnalyticsChoice(raw, now), null);
-  assert.equal(validGoogleId('G-DEMO123456'), 'G-DEMO123456');
+  assert.equal(validGoogleId('G-TEST123456'), 'G-TEST123456');
   assert.equal(validGoogleId('G-<script>'), '');
   assert.equal(validCloudflareToken('0123456789abcdef0123456789abcdef').length, 32);
   assert.equal(validCloudflareToken('bad'), '');

@@ -1,4 +1,4 @@
-import site from '../../config/site.json';
+import { PUBLIC_ORIGIN } from './public-site';
 import { couponLabel, normalizeCouponCode } from './coupon-format';
 
 export type CouponDraft = {
@@ -60,13 +60,13 @@ export function couponListText(draft: CouponDraft, batch?: CreatedCouponBatch | 
       hour12: false,
     });
   return [
-    site.name + ' · ' + draft.name,
+    '太行深处 · ' + draft.name,
     `${couponLabel(100 - draft.pay_percent)} · ${draft.codes.length} 张 · 每码一次`,
     batch
       ? `已创建；有效期：${local(batch.starts_at)} 至 ${local(batch.expires_at)}（北京时间）；当前使用状态以后台为准。`
       : `待启用；在后台确认创建成功后生效，有效 ${draft.valid_days} 天。`,
-    '下单入口：' + site.url + '/buy',
-    '每码仅优惠一件零售商品，多箱其余原价；不叠加、不抵运费，树认领不参与。',
+    '下单入口：' + PUBLIC_ORIGIN + '/buy',
+    '每码仅优惠一箱家庭装或礼盒装，多箱其余原价；不叠加、不抵运费，树认领不参与。',
     '已付款或退款后不恢复使用次数。请妥善保管清单，仅将对应券码发给领取人。',
     '创建请求：' + draft.request_id,
     '',
@@ -82,7 +82,7 @@ export function readCouponBackup(text: string): CouponDraft {
   const value = JSON.parse(text);
   const d = value?.draft;
   if (
-    value?.format !== 'orchard-coupons-v1' ||
+    value?.format !== 'shop-coupons-v1' ||
     !d ||
     typeof d.request_id !== 'string' ||
     !/^[a-f0-9-]{36}$/i.test(d.request_id) ||

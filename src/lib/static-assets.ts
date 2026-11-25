@@ -3,7 +3,7 @@ type AssetFetcher = { fetch(request: Request): Promise<Response> };
 const imagePath = /^\/(?:images|brand)\/[a-z0-9][a-z0-9/_-]*\.(?:avif|webp|png|jpe?g|svg|ico)$/i;
 const buildPath = /^\/_astro\/[a-z0-9/_-]+\.[a-z0-9_-]{8,}\.(?:js|css|woff2?)$/i;
 const fingerprint = /^\/images\/optimized\/[a-z0-9-]+-[a-f0-9]{12}\.(?:avif|webp|ico)$/;
-const versionedBrand = /^\/brand\/orchard-v\d+\//;
+const versionedBrand = /^\/brand\/[a-z0-9-]+-v\d+\//;
 const mapFingerprint = /^\/images\/maps\/china-(?:admin-)?gs\d{4}-\d+-[a-f0-9]{12}\.jpg$/;
 
 // Only bundled public files use this path. Pages, APIs and uploaded media never do.

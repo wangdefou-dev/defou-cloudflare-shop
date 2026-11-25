@@ -1,9 +1,15 @@
 ---
-export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { feature } from '../lib/store-config';
+// Switched off in config/store.json: the page is left empty and the worker never serves it.
+const on = feature('sponsorship');
 import Treat from '../components/Treat';
 ---
 
-<Layout>
-  <Treat client:media="(min-width: 1001px)" />
+<Layout noindex={!on}>
+  {on && (
+    <>
+      <Treat client:media="(min-width: 1001px)" />
+    </>
+  )}
 </Layout>

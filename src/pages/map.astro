@@ -1,9 +1,15 @@
 ---
-export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { feature } from '../lib/store-config';
+// Switched off in config/store.json: the page is left empty and the worker never serves it.
+const on = feature('footprintMap');
 import MapPage from '../components/MapPage';
 ---
 
-<Layout>
-  <MapPage client:load />
+<Layout noindex={!on}>
+  {on && (
+    <>
+      <MapPage client:media="(min-width: 1001px)" />
+    </>
+  )}
 </Layout>

@@ -1,6 +1,6 @@
-import { PUBLIC_ORIGIN, PUBLIC_PATHS, PUBLIC_SKUS } from './public-site';
+import { PUBLIC_ORIGIN, PUBLIC_PATHS } from './public-site';
 
-export const ANALYTICS_CHOICE_KEY = 'orchard.analytics.v1';
+export const ANALYTICS_CHOICE_KEY = 'shop.analytics.v1';
 export const ANALYTICS_CHOICE_TTL = 90 * 24 * 60 * 60 * 1000;
 export type AnalyticsChoice = 'granted' | 'denied';
 
@@ -25,7 +25,11 @@ export function analyticsPage(raw: string) {
     const path = url.pathname.replace(/\/$/, '') || '/';
     if (url.origin !== PUBLIC_ORIGIN || !PUBLIC_PATHS.includes(path)) return null;
     // Only known product selectors can accompany a measured page. Never pass tokens or free text.
-    if ([...url.searchParams].some(([key, value]) => key !== 'sku' || !PUBLIC_SKUS.includes(value)))
+    if (
+      [...url.searchParams].some(
+        ([key, value]) => key !== 'sku' || !['FAMILY', 'GIFT', 'PA', 'FG'].includes(value),
+      )
+    )
       return null;
     if (url.hash && !/^#[a-z-]+$/.test(url.hash)) return null;
     return { location: PUBLIC_ORIGIN + path, path, cloudflare: !url.search && !url.hash };

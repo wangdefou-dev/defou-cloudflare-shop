@@ -1,0 +1,11 @@
+{
+  "filename_prefix": "china-admin-gs2019-1825",
+  "review": "GS(2019)1825号",
+  "source_url": "http://bzdt.ch.mnr.gov.cn/browse.html?picId=%224o28b0625501ad13015501ad2bfc0260%22",
+  "source_image_url": "https://bzdt-sbsm.obs.cn-north-4.myhuaweicloud.com/prototype/64/4o28b0625501ad13015501ad2bfc0260.jpg",
+  "description": "中国地图 1:4800万 64开 分省设色 界线版 无邻国 线划一",
+  "overlay": {
+    "bounds": [0, 55, 1417, 1083],
+    "exclusions": [[1203, 765, 1417, 1083], [0, 810, 360, 1083]]
+  }
+}

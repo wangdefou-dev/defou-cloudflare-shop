@@ -50,7 +50,6 @@ export type AdminOrderDetail = {
     product_name: string;
     box_type: string;
     unit_weight_g: number;
-    unit?: string;
     qty: number;
   }[];
   address: AdminRecipient | null;
@@ -104,7 +103,7 @@ export async function adminOrderDetail(env: Env, orderId: string): Promise<Admin
     .first<NonNullable<AdminOrderDetail['adoption']>>();
   const [items, shipments] = await Promise.all([
     env.DB.prepare(
-      `SELECT i.product_id,i.qty,p.name product_name,p.box_type,p.unit_weight_g,p.unit
+      `SELECT i.product_id,i.qty,p.name product_name,p.box_type,p.unit_weight_g
       FROM order_items i JOIN products p ON p.id=i.product_id WHERE i.order_id=?`,
     )
       .bind(orderId)

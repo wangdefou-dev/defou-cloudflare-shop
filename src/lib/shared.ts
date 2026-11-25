@@ -1,8 +1,32 @@
-import site from '../../config/site.json';
-export const SEASON_START = site.season.start;
-export const SEASON_END = site.season.end;
-export const SPONSOR_MIN_HEADCOUNT = 6;
-export const REMOTE_PROVINCES = site.shipping.remoteProvinces;
+import { STORE, onStoreChange } from './store-config';
+
+// Live bindings: the season dates follow the site content edited in the admin.
+export let SEASON_START = STORE.season.start;
+export let SEASON_END = STORE.season.end;
+export let SPONSOR_MIN_HEADCOUNT = STORE.rules.sponsorMinHeadcount;
+onStoreChange(() => {
+  SEASON_START = STORE.season.start;
+  SEASON_END = STORE.season.end;
+  SPONSOR_MIN_HEADCOUNT = STORE.rules.sponsorMinHeadcount;
+});
+/** YYYY-MM-DD plus whole days (calendar arithmetic, no time zone). */
+export function addDays(date: string, days: number) {
+  return new Date(Date.parse(date + 'T00:00:00Z') + days * 86400000).toISOString().slice(0, 10);
+}
+/** "2026 年 11 月 30 日" */
+export const cnDate = (date: string) => {
+  const [y, m, d] = date.split('-').map(Number);
+  return `${y} 年 ${m} 月 ${d} 日`;
+};
+/** "11 月 30 日" */
+export const cnMonthDay = (date: string) => {
+  const [, m, d] = date.split('-').map(Number);
+  return `${m} 月 ${d} 日`;
+};
+/** Latest event date a sponsorship application may ask for. */
+export const sponsorLastDate = () => addDays(SEASON_END, STORE.rules.sponsorDaysAfterSeason);
+export const maxQtyPerOrder = () => STORE.rules.maxQtyPerOrder;
+export const REMOTE_PROVINCES = ['150000', '460000', '540000', '630000', '650000'];
 export const statusNames: Record<string, string> = {
   pending: '待支付',
   paid: '待发货',
@@ -37,3 +61,9 @@ export function csvCell(value: unknown) {
   if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
   return '"' + s.replaceAll('"', '""') + '"';
 }
+/** Approximate box weight in kg, e.g. 22 × 250g → 5.5. */
+export const boxKg = (count: number | null | undefined, gram: number | null | undefined) =>
+  Math.round(((count || 0) * (gram || 0)) / 100) / 10;
+/** Retail spec line such as "22 个 · 约 5.5kg". */
+export const retailSpec = (count: number | null | undefined, gram: number | null | undefined) =>
+  `${count || 0} ${STORE.words.countUnit} · 约 ${boxKg(count, gram)}kg`;

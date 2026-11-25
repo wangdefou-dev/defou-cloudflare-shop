@@ -23,7 +23,7 @@ test('JPEG uploads lose EXIF/XMP/IPTC/comments and trailing data without changin
 });
 test('WebP uploads remove metadata chunks, update RIFF length and clear metadata flags while retaining pixel dimensions', () => {
   const source = new Uint8Array(
-      readFileSync('tests/fixtures/tiny-lossless.webp'),
+      readFileSync('public/images/optimized/family-192-6103da5f2c20.webp'),
     ),
     extra = new TextEncoder().encode('GPS=PRIVATE;AUTHOR=PRIVATE');
   const appended = new Uint8Array(source.length + 8 + extra.length + (extra.length & 1));
@@ -35,7 +35,7 @@ test('WebP uploads remove metadata chunks, update RIFF length and clear metadata
   const safe = sanitizeImage(appended, 'image/webp'),
     original = sanitizeImage(source, 'image/webp');
   assert.deepEqual(safe, original);
-  assert.equal(safe.width, 2);
+  assert.equal(safe.width, 192);
   assert(!new TextDecoder().decode(safe.bytes).includes('PRIVATE'));
 });
 test('fake/truncated image signatures, malformed chunk sizes and animated uploads fail closed', () => {
@@ -48,10 +48,10 @@ test('fake/truncated image signatures, malformed chunk sizes and animated upload
 });
 test('lossy WebP pixels remain decodable after metadata removal', () => {
   const source = new Uint8Array(
-    readFileSync('tests/fixtures/tiny-lossy.webp'),
+    readFileSync('public/images/optimized/orchard-1280-3161147a0c99.webp'),
   );
   const safe = sanitizeImage(source, 'image/webp');
-  assert.equal(safe.width, 2);
+  assert.equal(safe.width, 1280);
   assert(safe.height > 0);
 });
 test('PNG text and EXIF chunks are removed while transparent pixels remain unchanged', () => {

@@ -1,0 +1,38 @@
+{
+  "FAMILY": {
+    "name": "家庭装",
+    "price": 10800,
+    "unit_weight_g": 250,
+    "count_per_box": 22,
+    "tagline": "把日子，过得脆甜",
+    "description": "22 个苹果一箱，单果约 250g，总重约 5.5kg。适合日常吃、和家人朋友分享，也适合给冰箱补一点秋天。",
+    "image_url": null
+  },
+  "GIFT": {
+    "name": "礼盒装",
+    "price": 12800,
+    "unit_weight_g": 350,
+    "count_per_box": 8,
+    "tagline": "认真挑，慢慢送",
+    "description": "8 个苹果一箱，单果约 350g，总重约 2.8kg。适合送给在意的人，可填写朋友的收件地址，并附一段简短寄语。",
+    "image_url": null
+  },
+  "PA": {
+    "name": "平安树",
+    "price": 88800,
+    "unit_weight_g": 250,
+    "count_per_box": 20,
+    "tagline": "一季十斤一箱，分次寄给在意的人",
+    "description": "",
+    "image_url": null
+  },
+  "FG": {
+    "name": "富贵树",
+    "price": 188800,
+    "unit_weight_g": 350,
+    "count_per_box": 9,
+    "tagline": "一季大果，慢慢分享",
+    "description": "",
+    "image_url": null
+  }
+}

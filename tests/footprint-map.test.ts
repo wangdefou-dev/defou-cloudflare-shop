@@ -173,7 +173,7 @@ test('city reference points share the province geometry projection for inland de
     });
   };
   for (const [city, province] of [
-    [MAP_ORIGIN.code, '320000'],
+    [MAP_ORIGIN.code, '130000'],
     ['320100', '320000'],
     ['510100', '510000'],
   ]) {

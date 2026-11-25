@@ -1,20 +1,24 @@
-# Local development only. npm run setup creates .dev.vars if it does not exist.
-# DEMO_MODE is accepted only on localhost / 127.0.0.1 / ::1.
-APP_ORIGIN=http://localhost:4321
+# Local development: copy to .dev.vars (it is git-ignored). Never commit real keys.
+# DEMO_MODE=true lets you open /admin and /admin/studio without logging in and pay with a
+# simulated checkout. It only works on localhost / 127.0.0.1.
 DEMO_MODE=true
+APP_ORIGIN=http://localhost:4321
 SALES_OPEN=false
-SITE_OFFLINE=false
+
+# Optional — only needed to test real Stripe test-mode payments locally.
 STRIPE_MODE=sandbox
-SANDBOX_CHECKOUT=false
 STRIPE_SECRET_KEY=
-STRIPE_REFUND_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+STRIPE_REFUND_SECRET_KEY=
 STRIPE_PAYMENT_METHOD_CONFIGURATION=
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
-ACCESS_TEAM_DOMAIN=
-ACCESS_AUD=
+
+# Production login (set as Worker secrets, not here): ADMIN_EMAIL, STUDIO_EMAIL.
 ADMIN_EMAIL=
+STUDIO_EMAIL=
+
+# Optional services. Telegram order notifications and Kuaidi100 tracking stay off by default.
 NOTIFICATIONS_ENABLED=false
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=

@@ -1,18 +1,21 @@
 ---
-import site from '../../config/site.json';
-export const prerender = true;
 import Layout from '../layouts/Layout.astro';
 import { ORIGIN_LABEL } from '../lib/content';
+import { STORE, feature } from '../lib/store-config';
+// Whole sentences are built here so formatting never inserts spaces inside Chinese text.
+const modules = [feature('adoption') && '认领预约', feature('sponsorship') && '活动赞助'].filter(
+  Boolean,
+);
+const collected = `本网站由${STORE.brand.publisher}运营。我们仅收集完成订单、发货、开票${modules.map((m) => '、' + m).join('')}所必要的信息，包括姓名、手机号、地址及申请内容。`;
+const storage = `浏览器使用会话存储保存临时订单访问凭证${feature('adoption') ? '。树认领使用登录 Cookie' : ''}，不用于广告追踪。${feature('sponsorship') ? '活动照片须取得组织者授权后才公开展示。' : ''}`;
+const originText = `${STORE.brand.name}的产地位于${ORIGIN_LABEL}。产地介绍${feature('diary') ? '与日记' : ''}聚焦商品本身，不公开生产者的家庭住址、私人联系方式或具体定位。`;
 ---
 
-<Layout title={'隐私说明 · ' + site.name} noindex>
+<Layout title={'隐私说明 · ' + STORE.brand.name} noindex>
   <article class="policy section">
     <div class="eyebrow">YOUR INFORMATION, RESPECTED</div>
     <h1>把心意寄给你，也守护你的信息</h1>
-    <p>
-      本网站由 {site.publisher}{' '}
-      运营。我们仅收集完成订单、发货、开票、认领预约和活动赞助所必要的信息，包括姓名、手机号、地址及申请内容。
-    </p>
+    <p>{collected}</p>
     <h2>信息如何使用</h2>
     <p>
       收件信息仅用于发货、物流和售后；开票信息仅用于电子普通发票；活动信息用于人工审核。支付由
@@ -32,13 +35,10 @@ import { ORIGIN_LABEL } from '../lib/content';
     </p>
     <h2>保存与删除</h2>
     <p>
-      订单履约完成后，按法定留存要求保存必要订单及财务记录，其他详细地址计划脱敏处理。你可通过订单页联系运营，申请查询、更正或删除非必要个人信息。
+      发货季结束后，按法定留存要求保存必要订单及财务记录，其他详细地址计划脱敏处理。你可通过订单页联系运营，申请查询、更正或删除非必要个人信息。
     </p>
     <h2>本地存储与图片</h2>
-    <p>
-      浏览器使用会话存储保存临时订单访问凭证。树认领使用登录
-      Cookie，不用于广告追踪。活动照片须取得组织者授权后才公开展示。
-    </p>
+    <p>{storage}</p>
     <h2 id="analytics">访问统计</h2>
     <p>
       公开页面使用 Cloudflare Web Analytics 了解访问量及页面加载速度。它不使用统计 Cookie。 Google
@@ -51,18 +51,11 @@ import { ORIGIN_LABEL } from '../lib/content';
       统计选择在本机保存 90 天，可随时通过页脚「访问统计设置」关闭 Google
       访问统计；关闭后将清除本站设置的 Google 统计 Cookie，不影响下单。
     </p>
-    {site.features.orchard && (
-      <>
-        <h2>果园内容</h2>
-        <p>
-          {site.name}的果园位于{ORIGIN_LABEL}
-          。果园介绍与采摘日记聚焦苹果和农事，不公开种植者的家庭住址、私人联系方式或具体定位。
-        </p>
-      </>
-    )}
+    <h2>产地内容</h2>
+    <p>{originText}</p>
     <p>
-      本页更新于 {site.contentUpdated}
-      。如需订单、发票或个人信息相关帮助，可通过站内「加我微信」入口联系运营。
+      本页更新于 2026 年 10 月 30
+      日。如需订单、发票或个人信息相关帮助，可通过站内「加我微信」入口联系运营。
     </p>
   </article>
 </Layout>

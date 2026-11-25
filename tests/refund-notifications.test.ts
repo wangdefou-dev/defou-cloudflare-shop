@@ -18,7 +18,7 @@ class MemoryD1 {
       .filter((f) => f.endsWith('.sql') && (!beforeRefundMigration || f < '0012'))
       .sort())
       this.db.exec(readFileSync('migrations/' + file, 'utf8'));
-    this.db.exec(readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
+    this.db.exec(readFileSync('scripts/seed.sql', 'utf8'));
     this.db.exec('UPDATE products SET stock=100');
   }
   prepare(sql: string) {
@@ -86,7 +86,7 @@ function refund(
     payment_intent: paymentIntent,
     charge: 'ch_refund_notification_fixture',
     metadata: {
-      project: 'orchard-shop',
+      project: 'defou-shop',
       order_id: orderId,
       buyer_phone: '13812345678',
       note: '私密备注',
@@ -394,9 +394,9 @@ test('refund messages are plain operating summaries with China confirmation time
       description: 'private.example',
     };
     const text = refundResultMessage(p);
-    assert(text.startsWith('📦 示例商店｜' + title));
+    assert(text.startsWith('🍎 太行深处｜' + title));
     assert.match(text, /订单号：DF-REFUND-NOTIFICATION/);
-    assert.match(text, /订单类型：商品零售/);
+    assert.match(text, /订单类型：苹果零售/);
     assert.match(text, /订单实付：¥108/);
     assert.match(
       text,

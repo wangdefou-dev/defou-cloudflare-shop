@@ -1,4 +1,4 @@
-import site from '../../config/site.json';
+import { STORE } from '../lib/store-config';
 import { useEffect, useState } from 'react';
 import ResponsivePhoto from './ResponsivePhoto';
 import { SCENE_IMAGES } from '../lib/media';
@@ -14,7 +14,13 @@ import {
   Turnstile,
   useConfig,
 } from './ui';
-import { chinaDate, SPONSOR_MIN_HEADCOUNT, statusNames } from '../lib/shared';
+import {
+  chinaDate,
+  cnMonthDay,
+  SPONSOR_MIN_HEADCOUNT,
+  sponsorLastDate,
+  statusNames,
+} from '../lib/shared';
 export default function Treat() {
   const { data: c } = useConfig(),
     [tab, setTab] = useState('apply'),
@@ -73,7 +79,7 @@ export default function Treat() {
         <PageIntro eyebrow="GOOD APPLES, GOOD COMPANY" title="你们相聚，苹果算我的">
           读书会、技术聚会、社区活动，或一场有意思的线下相遇。
           <br />
-          {site.publisher} 想用一箱苹果，为你们的相聚添一点甜。
+          {`${STORE.brand.publisher || STORE.brand.name}想用一箱苹果，为你们的相聚添一点甜。`}
         </PageIntro>
         <Sun className="treat-sun" size={145} strokeWidth={0.7} />
       </div>
@@ -144,7 +150,7 @@ export default function Treat() {
                         required
                         type="date"
                         min={chinaDate(6)}
-                        max={site.season.end}
+                        max={sponsorLastDate()}
                       />
                     </Field>
                     <Field label="预计参加人数" hint={`至少 ${SPONSOR_MIN_HEADCOUNT} 人参加`}>
@@ -212,7 +218,7 @@ export default function Treat() {
                   </Field>
                 </>
               )}
-              <Turnstile demo={c?.demo} siteKey={c?.turnstile_site_key} onToken={setToken} />
+              <Turnstile siteKey={c?.turnstile_site_key} onToken={setToken} />
               <ErrorBox text={error} />
               <Button busy={busy} disabled={!c || !token}>
                 {tab === 'lookup' ? '查询进度' : '把相聚邀请寄给我们'}
@@ -239,24 +245,24 @@ export default function Treat() {
           <figure className="aside-concept">
             <ResponsivePhoto photo={SCENE_IMAGES.COMMUNITY} sizes="300px" />
           </figure>
-          <div className="eyebrow">A LITTLE NOTE FROM US</div>
+          <div className="eyebrow">A LITTLE NOTE FROM DEFOU</div>
           <h2>
             技术连接世界，
             <br />
             苹果连接彼此
           </h2>
           <p>
-            平时在网上认识了很多朋友。想找个朴素的方式，让屏幕另一头的大家，也能尝到山间果园的秋天。
+            平时在网上认识了很多朋友。想找个朴素的方式，让屏幕另一头的大家，也能尝到太行山深处的秋天。
           </p>
           <p>
             不用把活动做得很大，也不用为苹果专门安排什么。
             <br />
             你们好好相聚，就很好。
           </p>
-          <div className="hand-sign">果园主</div>
+          <div className="hand-sign">{STORE.brand.name}</div>
           <hr />
           <small>
-            同一手机号 30 天内仅可申请一次。活动须晚于今天 5 天，最晚 {site.season.end}，为果园和快递留一点时间。
+            {`同一手机号 30 天内仅可申请一次。活动须晚于今天 5 天，最晚 ${cnMonthDay(sponsorLastDate())}，为果园和快递留一点时间。`}
           </small>
         </aside>
       </div>

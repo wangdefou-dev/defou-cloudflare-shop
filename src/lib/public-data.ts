@@ -1,7 +1,7 @@
 type PublicDataPath = '/config' | '/regions';
 declare global {
   interface Window {
-    __orchardPublicData?: Partial<Record<PublicDataPath, Promise<unknown>>>;
+    __shopPublicData?: Partial<Record<PublicDataPath, Promise<unknown>>>;
   }
 }
 
@@ -11,7 +11,7 @@ export async function readPublicData(
   path: PublicDataPath,
   fallback: (path: string) => Promise<any>,
 ) {
-  const pending = typeof window !== 'undefined' ? window.__orchardPublicData?.[path] : undefined;
+  const pending = typeof window !== 'undefined' ? window.__shopPublicData?.[path] : undefined;
   if (pending) {
     try {
       const value = await pending;

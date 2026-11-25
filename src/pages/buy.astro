@@ -1,9 +1,14 @@
 ---
-export const prerender = true;
 import Layout from '../layouts/Layout.astro';
-import StoreShop from '../components/StoreShop';
+import Shop from '../components/Shop';
+import MobileShop from '../components/MobileShop';
 ---
 
 <Layout>
-  <StoreShop client:load />
+  <div class="mobile-only">
+    <MobileShop kind="retail" client:media="(max-width: 1000px)" />
+  </div>
+  <div class="desktop-only">
+    <Shop kind="retail" client:media="(min-width: 1001px)" />
+  </div>
 </Layout>

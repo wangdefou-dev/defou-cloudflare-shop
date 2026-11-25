@@ -1,4 +1,3 @@
-import site from '../../config/site.json';
 import { sanitizeImage } from './image-sanitize';
 import { adminList } from './admin-lists';
 import { checkoutOrder } from './orders';
@@ -34,6 +33,11 @@ import { adminOrderDetail } from './admin-order';
 import { quoteCoupon, adminCoupons, createAdminCoupons } from './coupons';
 import { refundPreview, syncAdminRefunds, createAdminRefund } from './refunds';
 import { adminGifts } from './gifts';
+import { saveProductContent, productChanges } from './product-admin';
+import { STORE, feature } from './store-config';
+import { uploadMedia } from './media-upload';
+import { invalidateSiteContent, loadSiteContent } from './site-content';
+import { studioApi } from './studio-api';
 import { shipmentTracking, validTrackingNumber, type TrackingShipment } from './tracking';
 import { resolveCarrier } from './shipping';
 import {
@@ -92,7 +96,7 @@ async function lookup(env: Env, request: Request, b: any) {
 }
 async function publicOrder(env: Env, o: any) {
   const shipments = await env.DB.prepare(
-    "SELECT s.id,s.qty,s.status,s.carrier,s.tracking_no,s.expected_date,s.region_label,s.card_message,p.unit,p.name product_name FROM shipments s LEFT JOIN products p ON p.id=s.product_id WHERE (s.source='retail' AND s.source_id=?) OR s.id=?",
+    "SELECT id,qty,status,carrier,tracking_no,expected_date,region_label,card_message FROM shipments WHERE (source='retail' AND source_id=?) OR id=?",
   )
     .bind(o.id, o.shipment_id || '')
     .all();
@@ -101,13 +105,7 @@ async function publicOrder(env: Env, o: any) {
   )
     .bind(o.id)
     .first();
-  const items = await env.DB.prepare(
-    'SELECT i.product_id,i.qty,p.name product_name,p.unit,p.specification FROM order_items i JOIN products p ON p.id=i.product_id WHERE i.order_id=?',
-  )
-    .bind(o.id)
-    .all();
   return {
-    items: items.results,
     order_no: o.order_no,
     type: o.type,
     status: o.status,
@@ -132,8 +130,17 @@ export async function api(request: Request, env: Env): Promise<Response> {
       return json(await webhook(env, request));
     if (request.method !== 'GET' && request.method !== 'HEAD') sameOrigin(request);
     const demo = isDemo(env, request);
+    // Site settings console: lives under the Access-protected /api/admin prefix, but checks its
+    // own permission (STUDIO_EMAIL) instead of the operations admin list.
+    if (path === '/api/admin/studio' || path.startsWith('/api/admin/studio/'))
+      return await studioApi(request, env, path);
     // Reject anonymous management requests before even touching the rate-limit DB.
     if (path.startsWith('/api/admin')) return await adminApi(request, env, path);
+    // Module switches and the sales season come from the editable site content.
+    await loadSiteContent(env);
+    // Optional modules switched off in config/store.json answer like routes that never existed.
+    const module = disabledModule(path);
+    if (module) return json({ error: '页面不存在' }, 404);
     if (path === '/api/config' && request.method === 'GET') {
       const [products, publicSettings] = await Promise.all([
         env.DB.prepare('SELECT * FROM products').all(),
@@ -145,16 +152,16 @@ export async function api(request: Request, env: Env): Promise<Response> {
         sales_open:
           demo ||
           isSandbox(env, request) ||
-          (env.SALES_OPEN === 'true' && (!site.storefront.seasonal || isSaleDay())),
-        products: products.results.filter(
-          (p: any) =>
-            p.active === 1 &&
-            (demo || site.features.orchard || !['FAMILY', 'GIFT', 'PA', 'FG'].includes(p.sku)),
-        ),
+          (env.SALES_OPEN === 'true' && isSaleDay() && !publicSettings.sales_paused),
+        products: products.results,
         settings: publicSettings,
         turnstile_site_key: env.TURNSTILE_SITE_KEY || '',
-        contact_wechat: env.CONTACT_WECHAT || OWNER_WECHAT,
-        official_qr_url: env.OFFICIAL_QR_URL || '',
+        // Site settings first; the old deploy variables remain a fallback.
+        contact_wechat: OWNER_WECHAT || env.CONTACT_WECHAT || '',
+        official_qr_url:
+          (STORE.brand.contact.officialQr as { src: string } | null)?.src ||
+          env.OFFICIAL_QR_URL ||
+          '',
       });
     }
     if (path === '/api/map' && request.method === 'GET') {
@@ -203,12 +210,9 @@ export async function api(request: Request, env: Env): Promise<Response> {
       path === '/api/order/status' ? 600 : 60,
     );
     if (path === '/api/coupons/quote' && request.method === 'POST') {
-      openSales(env, request);
+      await openSales(env, request);
       const b = z
-        .object({
-          code: z.string().trim().min(1).max(40),
-          sku: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/),
-        })
+        .object({ code: z.string().trim().min(1).max(40), sku: z.enum(['FAMILY', 'GIFT']) })
         .parse(await jsonBody(request));
       const p = await env.DB.prepare('SELECT price,stock,active FROM products WHERE sku=?')
         .bind(b.sku)
@@ -557,8 +561,30 @@ export async function api(request: Request, env: Env): Promise<Response> {
 }
 async function adminApi(request: Request, env: Env, path: string) {
   const actor = await admin(env, request);
-  await rateLimit(env, 'admin-' + actor + ':' + path, 60);
+  // Reads (lists, searches, detail views) allow search-as-you-type; writes stay tighter.
+  const read =
+    request.method === 'GET' ||
+    [
+      '/api/admin/list',
+      '/api/admin/people/search',
+      '/api/admin/coupons/search',
+      '/api/admin/order-detail',
+      '/api/admin/customer-detail',
+      '/api/admin/adoption-detail',
+      '/api/admin/refunds/preview',
+      '/api/admin/refunds/sync',
+      '/api/admin/recipient',
+      '/api/admin/shipment-tracking',
+    ].includes(path);
+  await rateLimit(env, 'admin-' + actor + ':' + path, read ? 600 : 120);
   if (path === '/api/admin/gifts' && request.method === 'GET') return json(await adminGifts(env));
+  if (path === '/api/admin/product-changes' && request.method === 'GET')
+    return json(
+      await productChanges(
+        env,
+        z.enum(['FAMILY', 'GIFT', 'PA', 'FG']).parse(new URL(request.url).searchParams.get('id')),
+      ),
+    );
   if (
     ['/api/admin/refunds/preview', '/api/admin/refunds/sync'].includes(path) &&
     request.method === 'POST'
@@ -647,10 +673,11 @@ async function adminApi(request: Request, env: Env, path: string) {
       env.DB.prepare('SELECT * FROM products').all(),
     ]);
     const stats = await env.DB.prepare(
-      "SELECT (SELECT COALESCE(SUM(amount),0) FROM orders WHERE status IN ('paid','shipped')) revenue,(SELECT COALESCE(SUM(qty),0) FROM shipments WHERE status='reserved') pending_boxes,(SELECT COUNT(*) FROM adoptions a JOIN orders o ON a.order_id=o.id WHERE o.status IN ('paid','shipped')) trees,(SELECT COUNT(*) FROM sponsor_apps WHERE status='pending') pending_sponsors,(SELECT COALESCE(SUM(boxes_granted),0) FROM sponsor_apps) sponsor_boxes,(SELECT COALESCE(SUM(boxes_granted*CASE WHEN product_id='GIFT' THEN 90 ELSE 80 END),0) FROM sponsor_apps) sponsor_cost",
-    ).first();
+      "SELECT (SELECT COALESCE(SUM(amount),0) FROM orders WHERE status IN ('paid','shipped')) gross_revenue,(SELECT COALESCE(SUM(r.amount),0) FROM admin_refund_requests r JOIN orders o ON o.id=r.order_id WHERE r.status='succeeded' AND o.status IN ('paid','shipped')) refunded,(SELECT COALESCE(SUM(qty),0) FROM shipments WHERE status='reserved') pending_boxes,(SELECT COUNT(*) FROM adoptions a JOIN orders o ON a.order_id=o.id WHERE o.status IN ('paid','shipped')) trees,(SELECT COUNT(*) FROM sponsor_apps WHERE status='pending') pending_sponsors,(SELECT COALESCE(SUM(boxes_granted),0) FROM sponsor_apps) sponsor_boxes,(SELECT COALESCE(SUM(boxes_granted*CASE WHEN product_id='GIFT' THEN 90 ELSE 80 END),0) FROM sponsor_apps) sponsor_cost",
+    ).first<Record<string, number>>();
     return json({
-      stats,
+      // Revenue is net of confirmed partial refunds; full refunds already leave paid/shipped.
+      stats: { ...stats, revenue: (stats?.gross_revenue || 0) - (stats?.refunded || 0) },
       orders: orders.rows,
       shipments: shipments.rows,
       sponsors: sponsors.rows,
@@ -696,8 +723,8 @@ async function adminApi(request: Request, env: Env, path: string) {
     ];
     const labels = [
       '订单号',
-      '商品规格',
-      '数量',
+      '箱型',
+      '箱数',
       '收件人',
       '手机号',
       '省市区',
@@ -725,55 +752,14 @@ async function adminApi(request: Request, env: Env, path: string) {
       },
     );
   }
-  if (path === '/api/admin/upload' && request.method === 'POST') {
-    assert(
-      Number(request.headers.get('content-length') || 0) <= 6 * 1024 * 1024,
-      413,
-      '文件最大 5MB',
-    );
-    const form = await new Response((await boundedBody(request, 6 * 1024 * 1024)) as BodyInit, {
-      headers: { 'content-type': request.headers.get('content-type') || '' },
-    }).formData();
-    const f = form.get('file');
-    assert(f instanceof File && f.size <= 5 * 1024 * 1024, 400, '请上传 5MB 内的图片或 PDF');
-    assert(
-      ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(f.type),
-      400,
-      '仅支持 JPG、PNG、WebP、PDF',
-    );
-    let bytes = new Uint8Array(await f.arrayBuffer());
-    const valid =
-      f.type === 'image/png'
-        ? bytes[0] === 137 && bytes[1] === 80
-        : f.type === 'image/jpeg'
-          ? bytes[0] === 255 && bytes[1] === 216
-          : f.type === 'image/webp'
-            ? new TextDecoder().decode(bytes.slice(8, 12)) === 'WEBP'
-            : new TextDecoder().decode(bytes.slice(0, 5)) === '%PDF-';
-    assert(valid, 400, '文件内容与格式不匹配');
-    if (f.type !== 'application/pdf') {
-      try {
-        bytes = sanitizeImage(bytes, f.type).bytes as Uint8Array<ArrayBuffer>;
-      } catch (e) {
-        throw new HttpError(400, e instanceof Error ? e.message : '图片无效');
-      }
-    }
-    const key =
-      'apple-2026/' +
-      id() +
-      '.' +
-      { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'application/pdf': 'pdf' }[
-        f.type
-      ];
-    await env.MEDIA.put(key, bytes, { httpMetadata: { contentType: f.type } });
-    return json({ url: '/media/' + key });
-  }
+  if (path === '/api/admin/upload' && request.method === 'POST')
+    return json(await uploadMedia(env, request, { allowPdf: true, source: 'admin' }));
   assert(request.method === 'POST', 405, '请求方法不支持');
   const b = await jsonBody(request);
   if (path === '/api/admin/product') {
     const p = z
       .object({
-        id: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/),
+        id: z.enum(['FAMILY', 'GIFT', 'PA', 'FG']),
         revision: z.number().int().nonnegative(),
         reason: z.string().trim().max(160).default(''),
         stock: z.number().int().min(0).max(1000000),
@@ -798,21 +784,12 @@ async function adminApi(request: Request, env: Env, path: string) {
         'UPDATE products SET stock=?,active=?,restock_date=? WHERE id=? AND revision=?',
       ).bind(p.stock, p.active ? 1 : 0, p.restock_date || null, p.id, p.revision),
     ]);
-    assert(updated.meta.changes === 1, 409, '库存已变化，请刷新后重新保存');
-  } else if (path === '/api/admin/settings') {
-    const s = z
-      .object({
-        remote_fee: z.number().int().min(0).max(100000),
-        remote_provinces: z.array(z.string().regex(/^\d{6}$/)),
-      })
-      .parse(b);
-    await env.DB.batch(
-      Object.entries(s).map(([k, v]) =>
-        env.DB.prepare(
-          'INSERT INTO settings VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
-        ).bind(k, JSON.stringify(v)),
-      ),
-    );
+    // D1 counts the product_revision trigger's own write in meta.changes, so a successful
+    // save reports 2. Zero still means the revision guard rejected a stale form.
+    assert(updated.meta.changes > 0, 409, '库存已变化，请刷新后重新保存');
+  } else if (path === '/api/admin/product-content') {
+    await saveProductContent(env, actor, b);
+    invalidateSiteContent();
   } else if (path === '/api/admin/ship') {
     const s = z
       .object({
@@ -853,12 +830,17 @@ async function adminApi(request: Request, env: Env, path: string) {
     await rebuildMap(env);
   } else if (path === '/api/admin/invoice') {
     const s = z.object({ id: z.string(), url: z.string().max(1000).default('') }).parse(b);
-    assert(!s.url || s.url.startsWith('/media/apple-2026/'), 400, '请使用上传的 PDF');
-    await env.DB.prepare(
+    assert(
+      !s.url || /^\/media\/apple-2026\/[a-f0-9-]+\.pdf$/.test(s.url),
+      400,
+      '请上传 PDF 格式的发票',
+    );
+    const issued = await env.DB.prepare(
       "UPDATE orders SET invoice_status='issued',invoice_url=? WHERE id=? AND status IN ('paid','shipped') AND invoice_status='requested'",
     )
       .bind(s.url, s.id)
       .run();
+    assert(issued.meta.changes === 1, 409, '该订单无需开票、已开票或状态已变化，请刷新后查看');
   } else if (path === '/api/admin/tree-photos') {
     const s = z
       .object({
@@ -875,10 +857,7 @@ async function adminApi(request: Request, env: Env, path: string) {
         id: z.string(),
         action: z.enum(['approve', 'reject', 'photos']),
         qty: z.number().int().min(1).max(1000).optional(),
-        sku: z
-          .string()
-          .regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/)
-          .optional(),
+        sku: z.enum(['FAMILY', 'GIFT']).optional(),
         reason: z.string().max(300).default(''),
         photos: z.array(z.string().startsWith('/media/apple-2026/')).max(6).default([]),
         show: z.boolean().default(false),
@@ -931,16 +910,15 @@ async function adminApi(request: Request, env: Env, path: string) {
       })
       .parse(b);
     const p = await env.DB.prepare(
-      "SELECT p.unit_weight_g,p.kind,s.qty,p.count_per_box,o.amount paid_amount,o.discount_amount,(SELECT COALESCE(SUM(c.amount),0) FROM claims c JOIN shipments old_s ON old_s.id=c.shipment_id WHERE old_s.source='retail' AND old_s.source_id=o.id) claimed_amount FROM shipments s JOIN products p ON s.product_id=p.id LEFT JOIN orders o ON s.source='retail' AND s.source_id=o.id WHERE s.id=? AND s.status='shipped'",
+      "SELECT p.sku,p.unit_weight_g,s.qty,p.count_per_box,o.amount paid_amount,o.discount_amount,(SELECT COALESCE(SUM(c.amount),0) FROM claims c JOIN shipments old_s ON old_s.id=c.shipment_id WHERE old_s.source='retail' AND old_s.source_id=o.id) claimed_amount FROM shipments s JOIN products p ON s.product_id=p.id LEFT JOIN orders o ON s.source='retail' AND s.source_id=o.id WHERE s.id=? AND s.status='shipped'",
     )
       .bind(s.shipment_id)
       .first<any>();
-    assert(
-      p && p.count_per_box > 0 && s.count <= p.qty * p.count_per_box,
-      400,
-      '该商品不支持按坏果计赔，请使用订单退款',
-    );
-    const requestedAmount = s.count * (p.unit_weight_g === 350 ? 1500 : 500);
+    assert(p && s.count <= p.qty * p.count_per_box, 400, '请核对坏果个数');
+    // Compensation per bad fruit (yuan) is a business rule in the site settings.
+    const perFruit = (STORE.rules.claimPerFruit as Record<string, number>)[p.sku] ?? 0;
+    assert(perFruit > 0, 400, '这个商品未设置坏果赔付标准，请先在网站设置里填写');
+    const requestedAmount = s.count * perFruit * 100;
     const amount =
       p.discount_amount > 0
         ? Math.min(requestedAmount, p.paid_amount - p.claimed_amount)
@@ -968,4 +946,13 @@ async function adminApi(request: Request, env: Env, path: string) {
     .bind(id(), actor, path, String(b.id || b.shipment_id || 'settings'))
     .run();
   return json({ ok: true });
+}
+
+export function disabledModule(path: string) {
+  if (path.startsWith('/api/tree/') && !feature('adoption')) return 'adoption';
+  if ((path.startsWith('/api/treat/') || path === '/api/wall') && !feature('sponsorship'))
+    return 'sponsorship';
+  if (path === '/api/map' && !feature('footprintMap')) return 'footprintMap';
+  if (path === '/api/diary' && !feature('diary')) return 'diary';
+  return null;
 }

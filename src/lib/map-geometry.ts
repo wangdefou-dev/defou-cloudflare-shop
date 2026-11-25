@@ -1,4 +1,3 @@
-import site from '../../config/site.json';
 import { journeyBoxes } from './map-stats';
 import coordinates from './map-cities.json';
 import base from './map-base.json';
@@ -10,7 +9,7 @@ export const MAP_DECORATIONS = geometry.decorations as {
   path: string;
   kind: 'outline' | 'islands' | 'sea-lines';
 }[];
-export const MAP_ORIGIN = site.mapOrigin;
+export const MAP_ORIGIN = { code: '130500', name: '河北邢台' } as const;
 export type MapMode = 'all' | 'orders' | 'sponsor' | 'gift';
 export type MapCity = {
   city_code: string;

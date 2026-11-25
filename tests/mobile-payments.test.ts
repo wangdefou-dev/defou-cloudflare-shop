@@ -116,7 +116,7 @@ test('Stripe requests keep the server net CNY amount, project configuration and 
         assert.equal(body.get('adaptive_pricing[enabled]'), 'false');
         assert.equal(body.get('payment_method_configuration'), 'pmc_fixture_mobile');
         assert.equal(body.get('locale'), 'zh');
-        assert.equal(body.get('metadata[project]'), 'orchard-shop');
+        assert.equal(body.get('metadata[project]'), 'defou-shop');
         assert.equal(body.get('payment_intent_data[metadata][order_id]'), order.id);
         assert.equal(body.get('payment_method_options[wechat_pay][client]'), null);
         assert.equal(body.get('payment_method_types[0]'), null);

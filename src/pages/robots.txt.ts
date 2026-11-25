@@ -1,4 +1,3 @@
-export const prerender = true;
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { publicSearchEnabled, robotsText } from '../lib/seo';

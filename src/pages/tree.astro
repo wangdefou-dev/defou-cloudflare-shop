@@ -1,15 +1,21 @@
 ---
-export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { feature } from '../lib/store-config';
+// Switched off in config/store.json: the page is left empty and the worker never serves it.
+const on = feature('adoption');
 import Shop from '../components/Shop';
 import MobileShop from '../components/MobileShop';
 ---
 
-<Layout>
-  <div class="mobile-only">
-    <MobileShop kind="adoption" client:media="(max-width: 1000px)" />
-  </div>
-  <div class="desktop-only">
-    <Shop kind="adoption" client:media="(min-width: 1001px)" />
-  </div>
+<Layout noindex={!on}>
+  {on && (
+    <>
+      <div class="mobile-only">
+        <MobileShop kind="adoption" client:media="(max-width: 1000px)" />
+      </div>
+      <div class="desktop-only">
+        <Shop kind="adoption" client:media="(min-width: 1001px)" />
+      </div>
+    </>
+  )}
 </Layout>

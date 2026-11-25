@@ -20,14 +20,14 @@ interface DefouBindings {
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;
   ADMIN_EMAIL?: string;
-  OPS_WEBHOOK_URL?: string;
+  /** Who may open the site settings console (/admin/studio). Separate from ADMIN_EMAIL. */
+  STUDIO_EMAIL?: string;
   NOTIFICATIONS_ENABLED?: string;
   NOTIFICATION_DAILY_HOUR?: string;
   NOTIFICATION_DAILY_MINUTE?: string;
   NOTIFICATION_START_DATE?: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
-  MEDIA_BASE_URL?: string;
   HERO_VIDEO_URL?: string;
   CONTACT_WECHAT?: string;
   OFFICIAL_QR_URL?: string;

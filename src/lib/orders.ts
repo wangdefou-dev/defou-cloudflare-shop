@@ -1,5 +1,4 @@
-import { catalogProduct } from './catalog';
-import site from '../../config/site.json';
+import { feature } from './store-config';
 import { checkout } from './validation';
 import { assert, HttpError, human, isDemo, jsonBody, pinHash, digest } from './security';
 import { settings } from './database';
@@ -15,7 +14,7 @@ const orderNo = () =>
   crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase();
 export async function checkoutOrder(env: Env, request: Request) {
   const demo = isDemo(env, request);
-  openSales(env, request);
+  await openSales(env, request);
   assertPaymentBrowser(request);
   const b = checkout.parse(await jsonBody(request));
   if (b.address) await validateAddress(env, b.address);
@@ -34,13 +33,7 @@ export async function checkoutOrder(env: Env, request: Request) {
       throw new HttpError(409, '原订单已结束，请再次提交新的订单', 'checkout_closed');
     const result = demo
       ? { url: '/pay/result?order=' + row.order_no }
-      : await createSession(
-          env,
-          request,
-          row,
-          site.name + '订单 ' + row.order_no,
-          b.payment_method,
-        );
+      : await createSession(env, request, row, '太行深处订单 ' + row.order_no, b.payment_method);
     return {
       id: row.id,
       order_no: row.order_no,
@@ -58,15 +51,13 @@ export async function checkoutOrder(env: Env, request: Request) {
   };
   const previous = await replay();
   if (previous) return previous;
+  assert(b.type !== 'adoption' || feature('adoption'), 404, '本店未开放认领');
   await human(env, request, b.turnstile);
   const config = await settings(env);
   const p = await env.DB.prepare('SELECT * FROM products WHERE sku=? AND active=1')
     .bind(b.sku)
     .first<any>();
   assert(p && p.stock >= b.qty, 409, '本批售罄，请等待下一批');
-  assert(p.kind === b.type, 400, '商品类型与下单方式不匹配');
-  const configured = catalogProduct(b.sku);
-  if (configured) assert(b.qty <= configured.maxPerOrder, 400, '购买数量超过该商品单次限购');
   const remote =
     b.type === 'retail'
       ? shippingFee(b.address!.province_code, b.qty, config.remote_provinces, config.remote_fee)

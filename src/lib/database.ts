@@ -1,4 +1,3 @@
-import site from '../../config/site.json';
 import { REMOTE_PROVINCES, SEASON_END } from './shared';
 import { reconcileCheckoutSessions } from './checkout-sessions';
 // Include paid tree count independently of bookings; never reuse older snapshots.
@@ -53,7 +52,9 @@ export async function settings(env: Env) {
   const values = Object.fromEntries(rows.results.map((r) => [r.key, JSON.parse(r.value)]));
   return {
     remote_provinces: values.remote_provinces || REMOTE_PROVINCES,
-    remote_fee: values.remote_fee ?? site.shipping.remoteFee,
+    remote_fee: values.remote_fee ?? 2000,
+    sales_paused: values.sales_paused === true,
+    announcement: typeof values.announcement === 'string' ? values.announcement : '',
   };
 }
 export async function rebuildMap(env: Env) {

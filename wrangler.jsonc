@@ -1,113 +1,116 @@
+// Cloudflare Workers configuration. Fill in the <…> values for your own account
+// (docs/部署指南.md walks through each step). Secrets are never written here:
+// set them with `npx wrangler secret put NAME --env production`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "orchard-shop",
+  "name": "defou-shop",
   "main": "src/worker.ts",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": true
+    // The worker runs first so the offline switch and admin login always apply.
+    "run_worker_first": true,
   },
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
+  // Local development (`npm run dev` / `npm run preview`). Put DEMO_MODE=true in .dev.vars.
   "vars": {
     "APP_ORIGIN": "http://localhost:4321",
     "SITE_OFFLINE": "false",
     "SALES_OPEN": "false",
     "DEMO_MODE": "false",
-    "SANDBOX_CHECKOUT": "false",
     "STRIPE_MODE": "sandbox",
     "STRIPE_PAYMENT_METHOD_CONFIGURATION": "",
-    "MEDIA_BASE_URL": "",
     "ACCESS_TEAM_DOMAIN": "",
     "ACCESS_AUD": "",
     "TURNSTILE_SITE_KEY": "",
-    "CONTACT_WECHAT": "your_wechat_id",
-    "OFFICIAL_QR_URL": "",
+    "NOTIFICATIONS_ENABLED": "false",
     "TRACKING_ENABLED": "false",
-    "NOTIFICATIONS_ENABLED": "false"
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "orchard-shop",
+      "database_name": "defou-shop",
       "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
   "kv_namespaces": [
     {
       "binding": "CACHE",
-      "id": "00000000000000000000000000000000"
-    }
+      "id": "00000000000000000000000000000000",
+    },
   ],
   "r2_buckets": [
     {
       "binding": "MEDIA",
-      "bucket_name": "orchard-shop-media"
-    }
+      "bucket_name": "defou-shop-media",
+    },
   ],
   "triggers": {
-    "crons": [
-      "*/5 * * * *"
-    ]
+    "crons": ["*/5 * * * *"],
   },
   "env": {
+    // Your live store: npm run deploy (builds with CLOUDFLARE_ENV=production).
     "production": {
-      "name": "orchard-shop",
+      "name": "defou-shop",
+      "workers_dev": false,
+      "preview_urls": false,
       "assets": {
         "directory": "./dist",
         "binding": "ASSETS",
-        "run_worker_first": true
+        "run_worker_first": true,
       },
+      "routes": [
+        {
+          "pattern": "<你的域名，例如 shop.example.com>",
+          "custom_domain": true,
+          "zone_name": "<域名所在的 Cloudflare 区域，例如 example.com>",
+        },
+      ],
       "vars": {
-        "APP_ORIGIN": "https://shop.example.com",
+        "APP_ORIGIN": "https://<你的域名>",
         "SITE_OFFLINE": "false",
+        // Keep false until the store is ready; daily pausing lives in 网站设置 → 接单与运费.
         "SALES_OPEN": "false",
         "DEMO_MODE": "false",
         "SANDBOX_CHECKOUT": "false",
-        "STRIPE_MODE": "live",
+        // sandbox = Stripe test mode; live = real payments.
+        "STRIPE_MODE": "sandbox",
         "STRIPE_PAYMENT_METHOD_CONFIGURATION": "",
-        "MEDIA_BASE_URL": "",
-        "ACCESS_TEAM_DOMAIN": "",
-        "ACCESS_AUD": "",
-        "TURNSTILE_SITE_KEY": "",
-        "CONTACT_WECHAT": "your_wechat_id",
-        "OFFICIAL_QR_URL": "",
+        // Cloudflare Zero Trust → Access application that protects /admin* and /api/admin/*.
+        "ACCESS_TEAM_DOMAIN": "<团队名>.cloudflareaccess.com",
+        "ACCESS_AUD": "<Access 应用的 Application Audience (AUD) Tag>",
+        "TURNSTILE_SITE_KEY": "<Turnstile 站点密钥>",
+        "NOTIFICATIONS_ENABLED": "false",
         "TRACKING_ENABLED": "false",
-        "NOTIFICATIONS_ENABLED": "false"
       },
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "orchard-shop",
-          "database_id": "00000000-0000-0000-0000-000000000000",
-          "migrations_dir": "migrations"
-        }
+          "database_name": "defou-shop",
+          "database_id": "<npx wrangler d1 create defou-shop 输出的 database_id>",
+          "migrations_dir": "migrations",
+        },
       ],
       "kv_namespaces": [
         {
           "binding": "CACHE",
-          "id": "00000000000000000000000000000000"
-        }
+          "id": "<npx wrangler kv namespace create CACHE 输出的 id>",
+        },
       ],
       "r2_buckets": [
         {
           "binding": "MEDIA",
-          "bucket_name": "orchard-shop-media"
-        }
+          "bucket_name": "defou-shop-media",
+        },
       ],
       "triggers": {
-        "crons": [
-          "*/5 * * * *"
-        ]
+        "crons": ["*/5 * * * *"],
       },
-      "workers_dev": true,
-      "preview_urls": false
-    }
-  }
+    },
+  },
 }

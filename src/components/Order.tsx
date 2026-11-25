@@ -1,4 +1,4 @@
-import site from '../../config/site.json';
+import { STORE } from '../lib/store-config';
 import { finishCheckoutIntent } from './checkout-client';
 import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Clock, ArrowUpRight, Copy, Package } from 'lucide-react';
@@ -122,25 +122,12 @@ export default function Order({ result = false }: { result?: boolean }) {
       setBusy(false);
     }
   }
-  async function simulatePayment() {
-    setBusy(true);
-    setError('');
-    try {
-      await request('/demo/pay', { order_no: number, phone, view_token: viewToken });
-      const next = await request('/order/status', { view_token: viewToken });
-      setLoadedOrder({ order: next, viewToken });
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
     <div className="page-wrap">
       {guide && <PaymentGuide order={order?.order_no} onClose={() => setGuide(false)} />}
       <PageIntro
-        eyebrow="A LITTLE AUTUMN, ON ITS WAY"
-        title={result ? '这一份心意，有了回音' : '你的订单，走到哪了？'}
+        eyebrow={STORE.pages.order.eyebrow}
+        title={result ? STORE.pages.order.resultTitle : STORE.pages.order.lookupTitle}
       >
         {result
           ? '支付状态以系统确认结果为准。请保存订单号，方便随时查找。'
@@ -169,7 +156,7 @@ export default function Order({ result = false }: { result?: boolean }) {
                 placeholder="DF 开头的订单号"
               />
             </Field>
-            <Turnstile demo={c?.demo} siteKey={c?.turnstile_site_key} onToken={setToken} />
+            <Turnstile siteKey={c?.turnstile_site_key} onToken={setToken} />
             <ErrorBox text={error} />
             <Button busy={busy} disabled={!c || !token}>
               查询订单 <ArrowUpRight size={17} />
@@ -177,7 +164,10 @@ export default function Order({ result = false }: { result?: boolean }) {
           </form>
           <div className="order-help">
             <h3>有一点小状况？</h3>
-            <p>{site.storefront.afterSalesNote}</p>
+            <p>
+              坏果请在收货 48 小时内拍照，保留订单号联系运营。250g 规格每个赔 ¥5，350g 规格每个赔
+              ¥15。
+            </p>
             {c?.contact_wechat ? (
               <p>
                 售后微信：<strong>{c.contact_wechat}</strong>
@@ -200,9 +190,9 @@ export default function Order({ result = false }: { result?: boolean }) {
               <span className={'status-tag ' + order.status}>{statusNames[order.status]}</span>
               <h2>
                 {order.status === 'paid'
-                  ? '商品，准备出发'
+                  ? STORE.pages.order.paidTitle
                   : order.status === 'shipped'
-                    ? '你的秋天，正在路上'
+                    ? STORE.pages.order.shippedTitle
                     : order.status === 'pending'
                       ? '订单已保留，等待支付确认'
                       : statusNames[order.status]}
@@ -227,7 +217,7 @@ export default function Order({ result = false }: { result?: boolean }) {
                     <span>¥{money(order.original_amount)}</span>
                   </div>
                   <div className="summary-row">
-                    <span>优惠券（仅一件）</span>
+                    <span>优惠券（仅一箱）</span>
                     <span>−¥{money(order.discount_amount)}</span>
                   </div>
                 </>
@@ -250,18 +240,6 @@ export default function Order({ result = false }: { result?: boolean }) {
                 <span>发票</span>
                 <span>{statusNames[order.invoice_status]}</span>
               </div>
-              {order.items?.length > 0 && (
-                <div className="order-items">
-                  <h3>所购商品</h3>
-                  {order.items.map((item: any) => (
-                    <p key={item.product_id}>
-                      <strong>{item.product_name}</strong> × {item.qty} {item.unit || '件'}
-                      <br />
-                      <small>{item.specification}</small>
-                    </p>
-                  ))}
-                </div>
-              )}
               {order.adoption && (
                 <div className="adoption-receipt">
                   <h3>你的认领码</h3>
@@ -279,18 +257,13 @@ export default function Order({ result = false }: { result?: boolean }) {
                 <div className="shipment-card" key={s.id}>
                   <div>
                     <strong>
-                      {s.qty} {s.unit || '件'} · {s.region_label}
+                      {s.qty} 箱 · {s.region_label}
                     </strong>
                     <p>{statusNames[s.status]}</p>
                     <ShipmentTracking shipment={s} context="order" viewToken={viewToken} />
                   </div>
                 </div>
               ))}
-              {c?.demo && order.status === 'pending' && (
-                <Button type="button" busy={busy} onClick={simulatePayment}>
-                  模拟付款成功（不扣款）
-                </Button>
-              )}
               {order.status === 'pending' && (
                 <>
                   {paymentEnvironment.wechat && (
@@ -307,15 +280,15 @@ export default function Order({ result = false }: { result?: boolean }) {
               )}
               {c?.official_qr_url && (
                 <div className="official-follow">
-                  <img src={c.official_qr_url} alt="公众号二维码" />
-                  <p>关注公众号，了解商店的后续消息。</p>
+                  <img src={c.official_qr_url} alt={STORE.pages.order.followAlt} />
+                  <p>{STORE.pages.order.followText}</p>
                 </div>
               )}
             </>
           ) : (
             <>
               <Package size={70} strokeWidth={0.8} />
-              <h2>商品与服务，认真交付</h2>
+              <h2>{STORE.pages.order.emptyTitle}</h2>
               <p>查到订单后，会在这里显示出发的消息。</p>
             </>
           )}

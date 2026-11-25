@@ -1,4 +1,3 @@
-import { SEASON_END } from '../src/lib/shared';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
@@ -17,7 +16,7 @@ class LocalD1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(fs.readFileSync('migrations/' + f, 'utf8'));
-    this.db.exec(fs.readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
+    this.db.exec(fs.readFileSync('scripts/seed.sql', 'utf8'));
     this.db.exec(fs.readFileSync('scripts/demo-stock.sql', 'utf8'));
     this.db.exec(fs.readFileSync('scripts/regions.sql', 'utf8'));
   }
@@ -179,14 +178,8 @@ test('admin order detail reveals pending recipient only after authentication and
     403,
   );
   assert.equal(
-    (
-      await call(
-        env,
-        '/admin/order-detail',
-        { id: orderId },
-        { origin: 'https://shop.example.com' },
-      )
-    ).status,
+    (await call(env, '/admin/order-detail', { id: orderId }, { origin: 'https://shop.example.com' }))
+      .status,
     503,
   );
   const unauthorized = await call(
@@ -421,7 +414,7 @@ test('real signed Stripe webhook is idempotent; partial refund preserves map, fu
     data: {
       object: {
         id: 'cs_local',
-        metadata: { project: 'orchard-shop', order_id: o.id },
+        metadata: { project: 'defou-shop', order_id: o.id },
         payment_status: 'paid',
         currency: 'cny',
         amount_total: 10800,
@@ -461,7 +454,7 @@ test('invalid webhook signature and mismatched amount are rejected', async () =>
         data: {
           object: {
             id: 'cs_local',
-            metadata: { project: 'orchard-shop', order_id: o.id },
+            metadata: { project: 'defou-shop', order_id: o.id },
             payment_status: 'paid',
             currency: 'cny',
             amount_total: 1,
@@ -495,7 +488,7 @@ test('sandbox rejects live credentials and signed live webhooks before order mut
     data: {
       object: {
         id: 'cs_mixed',
-        metadata: { project: 'orchard-shop', order_id: o.id },
+        metadata: { project: 'defou-shop', order_id: o.id },
         payment_status: 'paid',
         currency: 'cny',
         amount_total: 10800,
@@ -515,7 +508,7 @@ test('asynchronous Checkout waits for paid status and failed payment releases st
   db.prepare('UPDATE orders SET stripe_session_id=? WHERE id=?').run('cs_async', o.id);
   const session = {
     id: 'cs_async',
-    metadata: { project: 'orchard-shop', order_id: o.id },
+    metadata: { project: 'defou-shop', order_id: o.id },
     currency: 'cny',
     amount_total: 10800,
     payment_status: 'unpaid',
@@ -561,7 +554,7 @@ test('asynchronous Checkout waits for paid status and failed payment releases st
         data: {
           object: {
             id: 'cs_async_failed',
-            metadata: { project: 'orchard-shop', order_id: failed.id },
+            metadata: { project: 'defou-shop', order_id: failed.id },
           },
         },
       })
@@ -616,7 +609,7 @@ test('sandbox season override and dummy Turnstile stay confined to the sandbox h
     SANDBOX_CHECKOUT: 'true',
     STRIPE_MODE: 'sandbox',
     STRIPE_SECRET_KEY: 'rk_test_fixture',
-    APP_ORIGIN: 'https://orchard-shop-sandbox.example.workers.dev',
+    APP_ORIGIN: 'https://defou-shop-sandbox.example.workers.dev',
     TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
   });
   const request = new Request(env.APP_ORIGIN + '/api/checkout');
@@ -986,14 +979,12 @@ test('season-end creates one remaining-box shipment to latest non-remote address
     { qty: 2, address: addr, expected_date: chinaDate(2) },
     { headers: { cookie } },
   );
-  const after = Date.parse(SEASON_END + 'T01:00:00+08:00') + 86400000;
-  const date = chinaDate(0, new Date(after));
-  await maintenance(env, new Date(after));
-  await maintenance(env, new Date(after + 600000));
+  await maintenance(env, new Date('2026-12-01T01:00:00+08:00'));
+  await maintenance(env, new Date('2026-12-01T01:10:00+08:00'));
   assert.equal((db.prepare('SELECT used_boxes FROM adoptions').get() as any).used_boxes, 8);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM shipments').get() as any).n, 2);
   assert.equal(
-    (db.prepare('SELECT qty FROM shipments WHERE expected_date=?').get(date) as any).qty,
+    (db.prepare("SELECT qty FROM shipments WHERE expected_date='2026-12-01'").get() as any).qty,
     6,
   );
 });
@@ -1061,7 +1052,7 @@ test('own refund arriving before payment synchronization retries instead of bein
       object: {
         refunded: true,
         payment_intent: 'pi_not_synced',
-        metadata: { project: 'orchard-shop' },
+        metadata: { project: 'defou-shop' },
       },
     },
   });
@@ -1076,7 +1067,7 @@ test('production accepts signed live payment and rejects a signed sandbox event'
   env.STRIPE_MODE = 'live';
   const object = {
     id: 'cs_live_fixture',
-    metadata: { project: 'orchard-shop', order_id: order.id },
+    metadata: { project: 'defou-shop', order_id: order.id },
     payment_status: 'paid',
     currency: 'cny',
     amount_total: 10800,

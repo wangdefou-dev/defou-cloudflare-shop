@@ -1,25 +1,26 @@
 ---
-import { BRAND_NAME } from '../lib/content';
-import { BRAND_IMAGE } from '../lib/media';
+import { STORE } from '../lib/store-config';
+// 网站设置 → 网站内容 → 品牌与联系 → Logo replaces the text logo with an uploaded image.
+const custom = STORE.brand.logo as { src: string; width: number; height: number } | null;
 interface Props {
   footer?: boolean;
 }
 const { footer = false } = Astro.props;
 ---
 
-<img
-  class="brand-logo"
-  src={BRAND_IMAGE.src}
-  srcset={BRAND_IMAGE.srcSet}
-  sizes={
-    footer
-      ? '210px'
-      : '(max-width: 360px) 138px, (max-width: 1000px) 148px, (max-width: 1150px) 180px, 200px'
-  }
-  width={BRAND_IMAGE.width}
-  height={BRAND_IMAGE.height}
-  alt={BRAND_NAME}
-  loading={footer ? 'lazy' : 'eager'}
-  fetchpriority={footer ? 'auto' : 'high'}
-  decoding="async"
-/>
+{custom ? (
+  <img
+    class="brand-logo"
+    src={custom.src}
+    width={custom.width}
+    height={custom.height}
+    alt={STORE.brand.name}
+    loading={footer ? 'lazy' : 'eager'}
+    decoding="async"
+  />
+) : (
+  <span class:list={['brand-text-logo', { footer }]}>
+    <img src="/brand/apple-mark.svg" width="34" height="34" alt="" aria-hidden="true" />
+    {STORE.brand.name}
+  </span>
+)}

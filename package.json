@@ -1,35 +1,25 @@
 {
   "name": "defou-cloudflare-shop",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run build && astro preview --host 127.0.0.1",
-    "build": "npm run config:check && astro build",
-    "build:production": "node scripts/build-production.mjs",
+    "dev": "astro dev --host 127.0.0.1",
+    "build": "astro build",
+    "build:production": "npm run config:check && CLOUDFLARE_ENV=production astro build && npm run verify:public",
     "preview": "astro preview --host 127.0.0.1",
     "check": "astro check",
     "test": "tsx --test tests/*.test.ts",
     "db:local": "wrangler d1 migrations apply DB --local",
-    "db:seed": "wrangler d1 execute DB --local --file scripts/seed.sql",
+    "db:seed": "wrangler d1 execute DB --local --file scripts/seed.sql && wrangler d1 execute DB --local --file scripts/seed-content.sql",
     "deploy": "npm run deploy:production",
-    "deploy:production": "npm run doctor -- --production && npm run build:production && wrangler deploy --env production",
+    "deploy:production": "npm run build:production && wrangler deploy",
     "types": "wrangler types",
     "verify:public": "node scripts/check-public-build.mjs",
-    "setup": "node scripts/setup.mjs",
-    "configure": "node scripts/configure.mjs",
-    "doctor": "node scripts/doctor.mjs",
-    "config:sync": "node scripts/config-sync.mjs",
-    "config:check": "node scripts/config-sync.mjs --check",
-    "db:regions": "wrangler d1 execute DB --local --file scripts/regions.sql",
-    "db:demo": "wrangler d1 execute DB --local --file scripts/demo-stock.sql",
-    "db:migrate:production": "wrangler d1 migrations apply DB --remote --env production",
-    "db:seed:production": "wrangler d1 execute DB --remote --env production --file scripts/seed.sql",
-    "db:regions:production": "wrangler d1 execute DB --remote --env production --file scripts/regions.sql",
-    "secrets:production": "wrangler secret bulk .secrets.production.json --env production",
-    "scan:public": "node scripts/scan-public.mjs",
-    "dev:pages": "astro dev --host 127.0.0.1",
-    "products": "node scripts/products.mjs"
+    "verify:pages": "node scripts/check-pages.mjs",
+    "catalog:pull": "node scripts/pull-catalog.mjs",
+    "config:check": "tsx scripts/check-config.ts",
+    "db:demo": "wrangler d1 execute DB --local --file scripts/regions.sql && wrangler d1 execute DB --local --file scripts/demo-stock.sql"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.2",
@@ -56,18 +46,6 @@
     "typescript": "^5.9.0",
     "wrangler": "^4.156.2"
   },
-  "license": "MIT",
-  "description": "得否科技 · 得否开源的 Cloudflare 通用实物商城，支持自定义商品、库存、优惠券、Stripe 支付和经营后台",
-  "engines": {
-    "node": ">=24 <25"
-  },
-  "author": {
-    "name": "得否科技 · 得否",
-    "url": "https://x.com/wangdefou"
-  },
-  "homepage": "https://github.com/wangdefou-dev/defou-cloudflare-shop",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/wangdefou-dev/defou-cloudflare-shop.git"
-  }
+  "description": "Cloudflare Workers 上的独立商店：可在后台随时修改文案和配图，支持 Stripe 支付、库存、发货、优惠券与退款。",
+  "license": "MIT"
 }

@@ -1,8 +1,351 @@
 ---
-export const prerender = true;
-import site from '../../config/site.json';
-import OrchardHome from '../components/OrchardHome.astro';
-import StoreHome from '../components/StoreHome.astro';
+// Every visible word on this page comes from config/store.json → home (see docs/开源定制.md).
+import { env } from 'cloudflare:workers';
+import { ArrowDown, ArrowUpRight, Heart, Mountain, Sprout, Truck } from 'lucide-react';
+import ProductPhoto from '../components/ProductPhoto';
+import ResponsivePhoto from '../components/ResponsivePhoto';
+import { SCENE_IMAGES } from '../lib/media';
+import Layout from '../layouts/Layout.astro';
+import HomeLive from '../components/HomeLive.astro';
+import MobileShop from '../components/MobileShop';
+import { APPLE_FAQS, APPLE_PRODUCTS, ORIGIN_LABEL, SEASON_PRICES } from '../lib/content';
+import { money } from '../lib/shared';
+import { faqSchema } from '../lib/seo';
+import { STORE, feature, fill } from '../lib/store-config';
+const home = STORE.home;
+// Site settings first; the old deploy variable remains a fallback.
+const heroVideo = home.hero.videoUrl || env.HERO_VIDEO_URL;
+const words = STORE.words;
+const icons = { mountain: Mountain, sprout: Sprout, truck: Truck, heart: Heart } as const;
+const homeFaqs = home.faq.pick.map((i) => APPLE_FAQS[i]).filter(Boolean);
+const adoption = feature('adoption'),
+  sponsorship = feature('sponsorship');
+const cardEyebrows = home.shop.cardEyebrows as Record<string, string>;
 ---
 
-{site.features.orchard ? <OrchardHome /> : <StoreHome />}
+<Layout structuredData={[faqSchema(homeFaqs, '/')]}>
+  <div class="mobile-only">
+    <MobileShop client:media="(max-width: 1000px)" />
+  </div>
+  <div class="desktop-only">
+    <section class="hero">
+      <ResponsivePhoto
+        photo={SCENE_IMAGES.ORCHARD}
+        sizes="100vw"
+        priority
+        className="hero-picture"
+        imageClassName="hero-image"
+      />
+      {heroVideo && (
+        <video
+          class="hero-image hero-video"
+          muted
+          autoplay
+          loop
+          playsinline
+          preload="none"
+          poster={SCENE_IMAGES.ORCHARD.thumbnail}
+          aria-label={home.hero.videoLabel}
+        >
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+      )}
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+        <div class="eyebrow hero-eyebrow">
+          <span class="little-line"></span>
+          {home.hero.eyebrow}
+        </div>
+        <h1>
+          {home.hero.title.map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </h1>
+        <p>{home.hero.description}</p>
+        <div class="hero-buttons">
+          <a class="button red" href="/buy">
+            {home.hero.primaryCta} <ArrowUpRight size={19} aria-hidden="true" />
+          </a>
+          {adoption && (
+            <a class="button glass" href="/tree">
+              {home.hero.secondaryCta} <ArrowUpRight size={19} aria-hidden="true" />
+            </a>
+          )}
+        </div>
+        <div class="hero-source">
+          <span class="source-icon" aria-hidden="true">
+            <Mountain size={21} aria-hidden="true" />
+          </span>{' '}
+          {ORIGIN_LABEL} <span class="source-separator">/</span> {home.hero.sourceTag}
+        </div>
+      </div>
+      <div class="harvest-seal">
+        <small>{home.hero.seal.small}</small>
+        <strong>
+          {home.hero.seal.title.map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </strong>
+        <span>{home.hero.seal.caption}</span>
+      </div>
+
+      <a href="#story" class="hero-scroll">
+        {home.hero.scrollHint} <ArrowDown size={17} aria-hidden="true" />
+      </a>
+    </section>
+    <div class="promise-strip">
+      {home.promises.map((item) => {
+        const Icon = icons[item.icon as keyof typeof icons] || Heart;
+        return (
+          <div>
+            <span>
+              <Icon size={27} aria-hidden="true" />
+            </span>
+            <strong>{item.title}</strong>
+            <small>{item.note}</small>
+          </div>
+        );
+      })}
+    </div>
+    <section class="section story" id="story">
+      <div class="story-copy">
+        <div class="eyebrow">{home.story.eyebrow}</div>
+        <h2>
+          {home.story.title.map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </h2>
+        <div class="story-paragraphs">
+          {home.story.paragraphs.map((text) => (
+            <p>{fill(text)}</p>
+          ))}
+        </div>
+        <a class="text-link" href="#process">
+          {home.story.link} <ArrowUpRight size={19} aria-hidden="true" />
+        </a>
+      </div>
+      <div class="story-visual">
+        <ResponsivePhoto
+          photo={SCENE_IMAGES.ORCHARD}
+          sizes="(max-width: 1100px) 35vw, 512px"
+          position="75% 50%"
+        />
+        <div class="story-note">
+          <strong>
+            {home.story.noteTitle.map((line, i) => (
+              <>
+                {i > 0 && <br />}
+                {line}
+              </>
+            ))}
+          </strong>
+          <small>{home.story.noteCaption}</small>
+        </div>
+      </div>
+    </section>
+    <section class="process-section" id="process">
+      <div class="section-inner">
+        <div class="eyebrow">{home.process.eyebrow}</div>
+        <div class="section-heading">
+          <h2>{home.process.title}</h2>
+          <p>
+            {home.process.description.map((line, i) => (
+              <>
+                {i > 0 && <br />}
+                {line}
+              </>
+            ))}
+          </p>
+        </div>
+        <div class="process-track">
+          {home.process.steps.map(([season, title, note], i) => (
+            <div class="process-step">
+              <span class="process-node">{season}</span>
+              <small>{String(i + 1).padStart(2, '0')}</small>
+              <h3>{title}</h3>
+              <p>{note}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+    <section class="section shop-section">
+      <div class="eyebrow">{home.shop.eyebrow}</div>
+      <div class="section-heading">
+        <h2>
+          {home.shop.title.map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </h2>
+        <a class="text-link" href="/buy">
+          {home.shop.link} <ArrowUpRight size={18} aria-hidden="true" />
+        </a>
+      </div>
+      <div class="product-grid">
+        {APPLE_PRODUCTS.map((p) => (
+          <article class="product-card" data-live-sku={p.sku}>
+            <a
+              href={'/apples/' + p.slug}
+              class={'product-photo ' + p.slug}
+              aria-label={'查看' + p.name + '详情'}
+              data-live="aria-detail"
+            >
+              <ProductPhoto sku={p.sku} src={p.imageUrl} sizes="(max-width: 1200px) 44vw, 560px" />
+              <span class="tag" data-live="tagline">
+                {p.tagline}
+              </span>
+            </a>
+            <div class="product-info">
+              <span class="eyebrow">{cardEyebrows[p.sku] || ''}</span>
+              <div class="product-heading">
+                <h3>
+                  <a href={'/apples/' + p.slug} data-live="name">
+                    {p.name}
+                  </a>
+                </h3>
+                <div class="product-price">
+                  <strong data-live="price">{'¥' + money(SEASON_PRICES[p.sku])}</strong>
+                  <small>{'/ ' + words.pack}</small>
+                </div>
+              </div>
+              <div class="product-purchase-row">
+                <dl class="product-specs">
+                  <div>
+                    <dt>{words.countLabel}</dt>
+                    <dd data-live="count-box">{`${p.count} ${words.countUnit} / ${words.pack}`}</dd>
+                  </div>
+                  <div>
+                    <dt>{words.weightLabel}</dt>
+                    <dd data-live="weight">{'约 ' + p.weight + 'g'}</dd>
+                  </div>
+                  <div>
+                    <dt>{words.totalLabel}</dt>
+                    <dd data-live="total">{'约 ' + p.totalKg + 'kg'}</dd>
+                  </div>
+                </dl>
+                <a
+                  class="button red product-action"
+                  href={'/buy?sku=' + p.sku}
+                  aria-label={home.shop.buyLabel + p.name}
+                  data-live="aria-buy"
+                >
+                  {home.shop.buyLabel} <ArrowUpRight size={18} aria-hidden="true" />
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="fine-print centered">{home.shop.finePrint}</p>
+    </section>
+    {(adoption || sponsorship) && (
+      <section class="connection-section">
+        <div class="section-inner">
+          <div class="eyebrow">{home.more.eyebrow}</div>
+          <h2>
+            {home.more.title.map((line, i) => (
+              <>
+                {i > 0 && <br />}
+                {line}
+              </>
+            ))}
+          </h2>
+          <div class="connection-grid">
+            {adoption && (
+              <a href="/tree" class="connection-card tree-card">
+                <figure class="connection-image">
+                  <ResponsivePhoto
+                    photo={SCENE_IMAGES.ADOPTION}
+                    sizes="(max-width: 1200px) 42vw, 520px"
+                  />
+                </figure>
+                <span class="eyebrow">{home.more.adoption.eyebrow}</span>
+                <h3>{home.more.adoption.title}</h3>
+                <p>
+                  {home.more.adoption.text.map((line, i) => (
+                    <>
+                      {i > 0 && <br />}
+                      {line}
+                    </>
+                  ))}
+                </p>
+                <span class="connection-bottom">
+                  {'¥' +
+                    money(Math.min(SEASON_PRICES.PA, SEASON_PRICES.FG)) +
+                    ' ' +
+                    home.more.adoption.priceSuffix}{' '}
+                  <ArrowUpRight size={21} aria-hidden="true" />
+                </span>
+              </a>
+            )}
+            {sponsorship && (
+              <a href="/treat" class="connection-card treat-card">
+                <figure class="connection-image">
+                  <ResponsivePhoto
+                    photo={SCENE_IMAGES.COMMUNITY}
+                    sizes="(max-width: 1200px) 42vw, 520px"
+                  />
+                </figure>
+                <span class="eyebrow">{home.more.sponsorship.eyebrow}</span>
+                <h3>{home.more.sponsorship.title}</h3>
+                <p>
+                  {home.more.sponsorship.text.map((line, i) => (
+                    <>
+                      {i > 0 && <br />}
+                      {line}
+                    </>
+                  ))}
+                </p>
+                <span class="connection-bottom">
+                  {home.more.sponsorship.cta} <ArrowUpRight size={21} aria-hidden="true" />
+                </span>
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    )}
+    <HomeLive />
+    <section class="aftercare section">
+      <div>
+        <div class="eyebrow">{home.faq.eyebrow}</div>
+        <h2>
+          {home.faq.title.map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </h2>
+      </div>
+      <div class="faq-list">
+        {homeFaqs.map(([q, a]) => (
+          <details>
+            <summary>
+              {q}
+              <span>+</span>
+            </summary>
+            <p>{a}</p>
+          </details>
+        ))}
+        <div class="faq-guide-row">
+          <a class="faq-guide" href="/guide">
+            {home.faq.guideLink} <ArrowUpRight size={20} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

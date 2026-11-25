@@ -102,8 +102,8 @@ const { track } = Astro.props;
         send_page_view: false,
         allow_google_signals: false,
         allow_ad_personalization_signals: false,
-        cookie_domain: new URL(page.location).hostname,
-        cookie_prefix: 'orchard',
+        cookie_domain: location.hostname,
+        cookie_prefix: 'shop',
         cookie_expires: 90 * 86400,
       });
       gtag('event', 'page_view', safePage);
@@ -120,7 +120,7 @@ const { track } = Astro.props;
       if (started) gtag('consent', 'update', { analytics_storage: 'denied' });
       for (const item of document.cookie.split(';')) {
         const name = item.trim().split('=')[0];
-        if (!/^orchard_ga(?:_|$)/.test(name)) continue;
+        if (!/^shop_ga(?:_|$)/.test(name)) continue;
         for (const domain of ['', location.hostname])
           document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax; Secure${domain ? '; Domain=' + domain : ''}`;
       }

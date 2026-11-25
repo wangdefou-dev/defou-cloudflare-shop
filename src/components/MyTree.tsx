@@ -1,4 +1,3 @@
-import site from '../../config/site.json';
 import { useEffect, useState } from 'react';
 import { TreeDeciduous, CalendarDays, ArrowUpRight } from 'lucide-react';
 import {
@@ -13,7 +12,16 @@ import {
   Turnstile,
   useConfig,
 } from './ui';
-import { chinaDate, money, shippingFee, statusNames } from '../lib/shared';
+import {
+  addDays,
+  chinaDate,
+  cnDate,
+  cnMonthDay,
+  money,
+  SEASON_END,
+  shippingFee,
+  statusNames,
+} from '../lib/shared';
 import {
   PaymentGuide,
   PaymentOptions,
@@ -177,7 +185,7 @@ export default function MyTree() {
                 autoComplete="current-password"
               />
             </Field>
-            <Turnstile demo={c?.demo} siteKey={c?.turnstile_site_key} onToken={setToken} />
+            <Turnstile siteKey={c?.turnstile_site_key} onToken={setToken} />
             <ErrorBox text={error} />
             <Button busy={busy} disabled={!c || !token}>
               回到我的果园 <ArrowUpRight size={17} />
@@ -192,7 +200,7 @@ export default function MyTree() {
           <div className="deadline-banner">
             <CalendarDays size={20} />
             <span>
-              请在 <strong>{site.season.end} 前</strong> 预约全部箱数
+              请在 <strong>{cnDate(SEASON_END) + '前'}</strong> 预约全部箱数
             </span>
             <button
               className="text-button"
@@ -257,7 +265,7 @@ export default function MyTree() {
                       <input
                         type="date"
                         min={chinaDate(2)}
-                        max={site.season.end}
+                        max={SEASON_END}
                         required
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
@@ -302,7 +310,7 @@ export default function MyTree() {
                     )}
                   <ErrorBox text={error} />
                   {success && <p className="alert success">{success}</p>}
-                  <Button busy={busy} disabled={chinaDate(2) > site.season.end}>
+                  <Button busy={busy} disabled={chinaDate(2) > SEASON_END}>
                     确认预约 <ArrowUpRight size={17} />
                   </Button>
                 </form>
@@ -366,7 +374,7 @@ export default function MyTree() {
                     required
                     type="date"
                     min={chinaDate(2)}
-                    max={site.season.end}
+                    max={SEASON_END}
                     value={editing.expected_date}
                     onChange={(e) => setEditing({ ...editing, expected_date: e.target.value })}
                   />
@@ -384,7 +392,7 @@ export default function MyTree() {
             </div>
           )}
           <p className="fine-print centered">
-            未预约箱数将于 销售季结束后寄往最近一次收件地址；无历史地址的由运营联系确认。
+            {`未预约箱数将于 ${cnMonthDay(addDays(SEASON_END, 1))}后寄往最近一次收件地址；无历史地址的由运营联系确认。`}
           </p>
         </>
       )}

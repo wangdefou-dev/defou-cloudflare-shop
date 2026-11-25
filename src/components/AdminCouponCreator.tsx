@@ -1,4 +1,3 @@
-import site from '../../config/site.json';
 import { useEffect, useRef, useState } from 'react';
 import { Download, Plus } from 'lucide-react';
 import { Button, ErrorBox, Field, request } from './ui';
@@ -130,7 +129,7 @@ export default function AdminCouponCreator({ onCreated }: { onCreated: () => voi
                       onChange={(e) => setName(e.currentTarget.value)}
                     />
                   </Field>
-                  <Field label="折扣（折）" hint="8.8 折表示付原价的 88%，每码只优惠一件">
+                  <Field label="折扣（折）" hint="8.8 折表示付原价的 88%，每码只优惠一箱">
                     <input
                       type="number"
                       required
@@ -196,7 +195,7 @@ export default function AdminCouponCreator({ onCreated }: { onCreated: () => voi
                   onClick={() =>
                     download(
                       couponListText(draft, batch),
-                      `${site.name}-优惠券-${draft.request_id.slice(0, 8)}.txt`,
+                      `太行深处-优惠券-${draft.request_id.slice(0, 8)}.txt`,
                       'text/plain;charset=utf-8',
                     )
                   }
@@ -209,14 +208,14 @@ export default function AdminCouponCreator({ onCreated }: { onCreated: () => voi
                     download(
                       JSON.stringify(
                         {
-                          format: 'orchard-coupons-v1',
+                          format: 'shop-coupons-v1',
                           draft,
                           batch,
                         },
                         null,
                         2,
                       ),
-                      `${site.name}-优惠券备份-${draft.request_id.slice(0, 8)}.json`,
+                      `太行深处-优惠券备份-${draft.request_id.slice(0, 8)}.json`,
                       'application/json',
                     )
                   }

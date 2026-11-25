@@ -1,4 +1,4 @@
-import site from '../../config/site.json';
+import { STORE } from '../lib/store-config';
 import { checkoutPayload, useCheckoutSubmission } from './checkout-client';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Check, ChevronDown, ShieldCheck, Truck } from 'lucide-react';
@@ -16,8 +16,17 @@ import {
   Turnstile,
   useConfig,
 } from './ui';
-import { money, shippingFee } from '../lib/shared';
-import { APPLE_UNIT_WEIGHTS, SEASON_PRICES } from '../lib/content';
+import {
+  addDays,
+  cnDate,
+  cnMonthDay,
+  maxQtyPerOrder,
+  money,
+  retailSpec,
+  SEASON_END,
+  shippingFee,
+} from '../lib/shared';
+import { APPLE_PRODUCTS, APPLE_UNIT_WEIGHTS, SEASON_PRICES } from '../lib/content';
 import ProductPhoto from './ProductPhoto';
 import CouponField, { useCoupon } from './CouponField';
 import { PaymentOptions, usePaymentEnvironment, WeChatBrowserNotice } from './PaymentOptions';
@@ -25,14 +34,17 @@ import { browserPaymentEnvironment } from '../lib/payment-experience';
 
 const offers = {
   FAMILY: {
-    name: '家庭装',
+    name: APPLE_PRODUCTS[0].name,
     price: SEASON_PRICES.FAMILY,
-    detail: '22 个 · 约 5.5kg / 箱',
+    detail:
+      retailSpec(APPLE_PRODUCTS[0].count, APPLE_PRODUCTS[0].weight) + ' / ' + STORE.words.pack,
   },
   GIFT: {
-    name: '礼盒装',
+    name: APPLE_PRODUCTS[1].name,
     price: SEASON_PRICES.GIFT,
-    detail: '8 个大果 · 约 2.8kg / 盒',
+    detail:
+      retailSpec(APPLE_PRODUCTS[1].count, APPLE_PRODUCTS[1].weight) +
+      (STORE.words.pack === '箱' ? ' / 盒' : ' / ' + STORE.words.pack),
   },
   PA: {
     name: '平安树',
@@ -131,10 +143,15 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
   }
   return (
     <div className="mobile-shop">
+      {config?.settings?.announcement && (
+        <p className="alert shop-announcement" role="status">
+          {config.settings.announcement}
+        </p>
+      )}
       {paymentEnvironment.wechat && <WeChatBrowserNotice onOpen={() => setGuide({})} />}
       <div className="mobile-shop-intro">
         <div>
-          <h1>{tree ? '认领一棵，收获一季' : '一箱好苹果，快递到家'}</h1>
+          <h1>{tree ? '认领一棵，收获一季' : STORE.pages.buy.mobileTitle}</h1>
         </div>
         {tree && (
           <a href="/tree/my">
@@ -170,17 +187,35 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
                 >
                   <ProductPhoto
                     sku={key}
+                    src={live?.image_url}
                     sizes="(max-width: 360px) 75px, 92px"
                     audience="mobile"
                     priority
                   />
                   <span className="mobile-offer-copy">
-                    <strong>{item.name}</strong>
-                    <span>{item.detail}</span>
-                    <small className="unit-weight">单果约 {APPLE_UNIT_WEIGHTS[key]}g</small>
+                    <strong>{live?.name || item.name}</strong>
+                    <span>
+                      {live && !tree
+                        ? retailSpec(live.count_per_box, live.unit_weight_g) +
+                          (key === 'GIFT' && STORE.words.pack === '箱'
+                            ? ' / 盒'
+                            : ' / ' + STORE.words.pack)
+                        : item.detail}
+                    </span>
+                    <small className="unit-weight">
+                      {STORE.words.weightShort} {live?.unit_weight_g ?? APPLE_UNIT_WEIGHTS[key]}g
+                    </small>
                     <span className="mobile-offer-price">
                       ¥{money(live?.price ?? item.price)}
-                      <small> / {tree ? '季' : key === 'GIFT' ? '盒' : '箱'}</small>
+                      <small>
+                        {' '}
+                        /{' '}
+                        {tree
+                          ? '季'
+                          : key === 'GIFT' && STORE.words.pack === '箱'
+                            ? '盒'
+                            : STORE.words.pack}
+                      </small>
                     </span>
                   </span>
                   <span className="mobile-offer-check" aria-hidden="true">
@@ -196,7 +231,7 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
               <Quantity
                 value={qty}
                 onChange={setQty}
-                max={Math.max(1, Math.min(20, product?.stock ?? 20))}
+                max={Math.max(1, Math.min(maxQtyPerOrder(), product?.stock ?? maxQtyPerOrder()))}
               />
             </div>
           )}
@@ -204,21 +239,23 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
             {!config
               ? '正在确认库存…'
               : !config.sales_open
-                ? '本季暂未开放购买'
+                ? config.settings?.sales_paused
+                  ? '店铺暂停接单，请稍后再来'
+                  : '本季暂未开放购买'
                 : !product?.active || !product.stock
                   ? '所选规格暂时售罄，请选择其他规格'
-                  : `可售 ${product.stock} ${tree ? '棵' : '箱'}${!tree && qty > product.stock ? '，请减少购买数量' : ''}`}
+                  : `可售 ${product.stock} ${tree ? '棵' : STORE.words.pack}${!tree && qty > product.stock ? '，请减少购买数量' : ''}`}
           </p>
           <div className="mobile-service-line">
             <span>
               <Truck size={15} />
-              {tree ? '分次预约发货' : '快递配送'}
+              {tree ? '分次预约发货' : STORE.pages.buy.serviceBadges[0]}
             </span>
             <span>
               <ShieldCheck size={15} />
-              坏果按个赔
+              {STORE.pages.buy.serviceBadges[1]}
             </span>
-            <span>{tree ? '本季有效' : '48 小时内发货'}</span>
+            <span>{tree ? '本季有效' : STORE.pages.buy.serviceBadges[2]}</span>
           </div>
         </section>
         <section className="mobile-shop-section" aria-labelledby="mobile-recipient-title">
@@ -279,7 +316,7 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
                   ? `所选地区补运费 ¥${money(fee)}，已计入合计`
                   : '所选地区包邮'}
               <br />
-              付款后 48 小时内发货，{site.season.end} 前发完
+              {STORE.pages.buy.deliveryNote}
             </p>
           )}
           <details className="mobile-extras">
@@ -339,27 +376,23 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
                 本季认领与配送约定 <ChevronDown size={16} />
               </summary>
               <p>
-                请在 {site.season.end} 前预约全部箱数，发货日期至少提前两天选择。每次预约可填写不同收货地址；偏远地区按箱补运费差价，当前
-                ¥{money(config?.settings.remote_fee ?? 2000)}
+                {`请在 ${cnDate(SEASON_END)}前预约全部箱数，`}
+                发货日期至少提前两天选择。每次预约可填写不同收货地址；偏远地区按箱补运费差价，当前 ¥
+                {money(config?.settings.remote_fee ?? 2000)}
                 /箱。果树不足量时以同一果园同等级苹果补足。
               </p>
               <p>
-                未预约余量于 销售季结束后寄往最近一次收件地址；没有历史地址的，由运营电话联系。本季有效，不自动续费。
+                {`未预约余量于 ${cnMonthDay(addDays(SEASON_END, 1))}后寄往最近一次收件地址；`}
+                没有历史地址的，由运营电话联系。本季有效，不自动续费。
               </p>
             </details>
           )}
           <details className="mobile-tree-rules">
             <summary>
-              配送与坏果售后 <ChevronDown size={16} />
+              {STORE.pages.buy.afterSalesTitle} <ChevronDown size={16} />
             </summary>
-            <p>
-              由快递配送，零售付款后 48
-              小时内发货，认领按预约安排。偏远地区按箱补运费差价，金额在付款前显示。
-            </p>
-            <p>
-              收货 48 小时内拍照并联系运营，250g 规格坏果每个赔 ¥5，350g 规格每个赔
-              ¥15，认领箱同样适用。退款由运营核实后通过原支付渠道处理。
-            </p>
+            <p>{STORE.pages.buy.shippingNote}</p>
+            <p>{STORE.pages.buy.afterSalesNote}</p>
           </details>
           <label className="check-row mobile-consent">
             <input
@@ -377,7 +410,7 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
             </span>
           </label>
           <div ref={verification}>
-            <Turnstile demo={config?.demo} siteKey={config?.turnstile_site_key} onToken={setToken} />
+            <Turnstile siteKey={config?.turnstile_site_key} onToken={setToken} />
           </div>
           <ErrorBox text={error || loadError} />
           {loadError && (
@@ -405,7 +438,9 @@ export default function MobileShop({ kind = 'retail' }: { kind?: 'retail' | 'ado
               : !config
                 ? '加载中…'
                 : !config.sales_open
-                  ? '暂未开售'
+                  ? config.settings?.sales_paused
+                    ? '暂停接单'
+                    : '暂未开售'
                   : !available
                     ? '暂不可购买'
                     : paymentEnvironment.wechat

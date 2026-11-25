@@ -1,4 +1,3 @@
-import { SEASON_END } from '../src/lib/shared';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
@@ -45,7 +44,7 @@ test('unknown Checkout creation keeps stock and a valid signed paid event can re
       currency: 'cny',
       amount_total: 10800,
       client_reference_id: p.get('client_reference_id'),
-      metadata: { project: 'orchard-shop', type: 'retail', order_id: p.get('metadata[order_id]') },
+      metadata: { project: 'defou-shop', type: 'retail', order_id: p.get('metadata[order_id]') },
       payment_intent: 'pi_fixture',
     };
     return Response.json({ ...remote, payment_status: 'unpaid' });
@@ -262,10 +261,9 @@ test('season deadline reminders enter the new outbox at seven, three and one day
     agreed: true,
   });
   DB.db.prepare("UPDATE orders SET status='paid' WHERE id=?").run(order.data.id);
-  for (const days of [7, 3, 1]) {
-    const at = Date.parse(SEASON_END+'T00:00:00+08:00')+(1-days)*86400000;
-    await maintenance(env, new Date(at));
-    await maintenance(env, new Date(at+60000));
+  for (const day of ['24', '28', '30']) {
+    await maintenance(env, new Date('2026-11-' + day + 'T00:00:00+08:00'));
+    await maintenance(env, new Date('2026-11-' + day + 'T00:01:00+08:00'));
   }
   const rows = DB.db
     .prepare("SELECT id FROM operation_notifications WHERE id LIKE 'remind-%' ORDER BY id")
@@ -540,7 +538,7 @@ test('signed expired and failed callbacks recover an unlinked Session and releas
             currency: 'cny',
             amount_total: 10800,
             payment_status: 'unpaid',
-            metadata: { project: 'orchard-shop', type: 'retail', order_id: o.data.id },
+            metadata: { project: 'defou-shop', type: 'retail', order_id: o.data.id },
           },
         },
       },

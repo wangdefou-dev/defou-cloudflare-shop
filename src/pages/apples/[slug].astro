@@ -1,6 +1,4 @@
 ---
-import site from '../../../config/site.json';
-export const prerender = true;
 import ProductPhoto from '../../components/ProductPhoto';
 import Layout from '../../layouts/Layout.astro';
 import {
@@ -12,20 +10,25 @@ import {
 } from '../../lib/content';
 import { productSchema } from '../../lib/seo';
 import { money } from '../../lib/shared';
-export function getStaticPaths() {
-  return APPLE_PRODUCTS.map((product) => ({ params: { slug: product.slug } }));
-}
-const product = APPLE_PRODUCTS.find((p) => p.slug === Astro.params.slug)!;
-const price = '¥' + money(SEASON_PRICES[product.sku]);
+import { STORE, fill } from '../../lib/store-config';
+// Rendered per request from the live D1 catalog, so edits in the admin show immediately.
+const product = APPLE_PRODUCTS.find((p) => p.slug === Astro.params.slug);
+if (!product) Astro.response.status = 404;
+const price = product ? '¥' + money(SEASON_PRICES[product.sku]) : '';
 // A descriptive offer has a season price, but makes no stale inventory claim.
-const schema = [productSchema(product, { price: SEASON_PRICES[product.sku] }, {})];
+const schema = product ? [productSchema(product, { price: SEASON_PRICES[product.sku] }, {})] : [];
 ---
 
 <Layout
   title={
     product
-      ? `${BRAND_NAME}${product.name}苹果｜${product.count}个·单果约${product.weight}g·${price}`
-      : '商品未找到 · ' + site.name
+      ? fill(STORE.pages.product.titleTemplate, {
+          name: product.name,
+          count: product.count,
+          weight: product.weight,
+          price,
+        })
+      : '商品未找到 · ' + BRAND_NAME
   }
   image={product?.image}
   imageAlt={product?.imageAlt}
@@ -33,39 +36,46 @@ const schema = [productSchema(product, { price: SEASON_PRICES[product.sku] }, {}
   noindex={!product}
 >
   {product ? (
-    <article class="page-wrap product-detail">
+    <article class="page-wrap product-detail" data-live-sku={product.sku}>
       <nav class="breadcrumbs" aria-label="面包屑">
         <a href="/">首页</a>
         <span>/</span>
-        <a href="/buy">买苹果</a>
+        <a href="/buy">{STORE.words.buy}</a>
         <span>/</span>
-        <span>{product.name}</span>
+        <span data-live="name">{product.name}</span>
       </nav>
       <div class="product-detail-grid">
         <figure class="detail-image">
-          <ProductPhoto sku={product.sku} sizes="(max-width: 1200px) 50vw, 640px" priority />
+          <ProductPhoto
+            sku={product.sku}
+            src={product.imageUrl}
+            sizes="(max-width: 1200px) 50vw, 640px"
+            priority
+          />
           <figcaption>果品和包装以实物为准</figcaption>
         </figure>
         <div class="detail-copy">
-          <div class="eyebrow">A BOX OF AUTUMN / {product.slug.toUpperCase()}</div>
+          <div class="eyebrow">
+            {STORE.pages.product.eyebrow + ' / ' + product.slug.toUpperCase()}
+          </div>
           <h1>
-            {product.name}
-            <span> {product.tagline}</span>
+            <bdi data-live="name">{product.name}</bdi>
+            <span data-live="tagline"> {product.tagline}</span>
           </h1>
           <p class="detail-origin">{ORIGIN_LABEL}</p>
-          <p>{product.description}</p>
+          <p data-live="description">{product.description}</p>
           <dl class="spec-grid">
             <div>
               <dt>每箱数量</dt>
-              <dd>{product.count} 个</dd>
+              <dd data-live="count-unit">{product.count + ' 个'}</dd>
             </div>
             <div>
               <dt>单果约重</dt>
-              <dd>{product.weight}g</dd>
+              <dd data-live="weight-unit">{product.weight + 'g'}</dd>
             </div>
             <div>
               <dt>每箱约重</dt>
-              <dd>{product.totalKg}kg</dd>
+              <dd data-live="total-unit">{product.totalKg + 'kg'}</dd>
             </div>
             <div>
               <dt>发货快递</dt>
@@ -73,12 +83,12 @@ const schema = [productSchema(product, { price: SEASON_PRICES[product.sku] }, {}
             </div>
           </dl>
           <p class="detail-price">
-            <strong>{price}</strong>
+            <strong data-live="price">{price}</strong>
             <span>/ 箱</span>
           </p>
           <p class="fine-print">价格、库存和可售状态以下单页实时显示为准</p>
           <a class="button primary" href={'/buy?sku=' + product.sku}>
-            挑选{product.name} <span>↗</span>
+            挑选<bdi data-live="name">{product.name}</bdi> <span>↗</span>
           </a>
           <a class="text-link" href="/guide">
             先看看配送与售后说明 ↗
@@ -106,7 +116,7 @@ const schema = [productSchema(product, { price: SEASON_PRICES[product.sku] }, {}
     </article>
   ) : (
     <div class="section empty-state">
-      <h1>这箱苹果还没上架</h1>
+      <h1>{STORE.pages.product.notFound}</h1>
       <a class="button primary" href="/buy">
         看看现有规格 ↗
       </a>

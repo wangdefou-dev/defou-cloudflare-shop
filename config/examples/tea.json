@@ -1,0 +1,297 @@
+{
+  "brand": {
+    "name": "云上茶舍",
+    "publisher": "示例茶园",
+    "publisherTagline": "",
+    "siteUrl": "https://tea.example.com",
+    "originLabel": "云南省普洱市山区",
+    "slogan": "把山里的春茶，寄给你。",
+    "footerNote": "一年一春。",
+    "shareImageAlt": "云上茶舍 · 山里的一季春茶",
+    "themeColor": "#2f3b2a",
+    "copyrightYear": "2027",
+    "logo": {
+      "src": "/images/example/logo.svg",
+      "width": 400,
+      "height": 100
+    },
+    "contact": {
+      "title": "联系我们",
+      "wechat": "",
+      "wechatQr": null,
+      "xUrl": "",
+      "xLabel": "",
+      "xHandle": "",
+      "officialQr": null
+    },
+    "showCredit": true
+  },
+  "season": {
+    "start": "2027-03-20",
+    "end": "2027-06-30",
+    "label": "2027 明前春茶季",
+    "shortLabel": "2027 春茶季",
+    "status": "现已开售 · 6 月 30 日前发完",
+    "contentUpdated": "2027-03-20"
+  },
+  "features": {
+    "adoption": false,
+    "sponsorship": false,
+    "footprintMap": false,
+    "diary": true
+  },
+  "words": {
+    "product": "茶",
+    "buy": "买茶叶",
+    "buyCta": "带一罐春茶回家",
+    "pack": "罐",
+    "countUnit": "包",
+    "countLabel": "数量",
+    "weightLabel": "每包净含量",
+    "totalLabel": "整罐净含量",
+    "adoption": "认领苹安树",
+    "adoptionShort": "认领果树",
+    "myAdoption": "我的果树",
+    "sponsorship": "请你吃苹果",
+    "footprint": "苹果足迹",
+    "guide": "选购与配送指南",
+    "serviceLine": "快递配送 · 当季现采 · 破损包赔",
+    "shopFooterTitle": "选购茶叶",
+    "weightShort": "每包约",
+    "qtyQuestion": "带几罐回家？",
+    "summaryEyebrow": "YOUR LITTLE SPRING",
+    "productNote": "茶叶及包装以实物为准"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "来自云南山间的一封春日来信",
+      "title": ["把山里的春天，", "泡给你"],
+      "description": "高山茶园的春茶，一芽一叶慢慢长成，采下、杀青、揉捻，刚刚好送到你手里。",
+      "primaryCta": "买一罐，尝尝春天",
+      "secondaryCta": "认领一棵苹安树",
+      "sourceTag": "2027 春茶限定",
+      "videoLabel": "茶园春采短片",
+      "seal": {
+        "small": "当季现采",
+        "title": ["一年", "只等这一春"],
+        "caption": "THE SPRING EDITION"
+      },
+      "scrollHint": "往下，走进茶园"
+    },
+    "promises": [
+      {
+        "icon": "mountain",
+        "title": "高山茶园",
+        "note": "云雾里的好风土"
+      },
+      {
+        "icon": "sprout",
+        "title": "一芽一叶",
+        "note": "手工采摘，不赶时间"
+      },
+      {
+        "icon": "truck",
+        "title": "产地直发",
+        "note": "付款后 48 小时内发货"
+      },
+      {
+        "icon": "heart",
+        "title": "破损包赔",
+        "note": "一罐心意，好好送到"
+      }
+    ],
+    "story": {
+      "eyebrow": "01 / TEA FROM THE CLOUDS",
+      "title": ["一杯茶的来处，", "藏着一整个春天"],
+      "paragraphs": [
+        "云南省普洱市山区",
+        "每年春分前后，茶树抽出新芽，一年的等待，也到了采摘的时候",
+        "山里的云雾和温差，加上茶农一季的细心，才有了入口的那份回甘",
+        "我想把这份清香，寄得远一点"
+      ],
+      "link": "一片茶叶，要走过怎样的一年",
+      "noteTitle": ["风土有来处，", "茶香有回响。"],
+      "noteCaption": "云南山间 · 一季好春茶"
+    },
+    "process": {
+      "eyebrow": "A YEAR IN THE TEA GARDEN",
+      "title": "香，是慢慢做出来的",
+      "description": [
+        "从采摘到装罐，一季的心思，都在这一杯里。",
+        "每道工序认真对待，出厂前仔细挑拣。"
+      ],
+      "steps": [
+        ["采", "手工采摘", "一芽一叶"],
+        ["萎", "摊晾萎凋", "散去青气"],
+        ["杀", "高温杀青", "锁住香气"],
+        ["揉", "揉捻成形", "让茶汁均匀"],
+        ["装", "挑拣装罐", "把好茶寄给你"]
+      ]
+    },
+    "shop": {
+      "eyebrow": "02 / A CAN OF SPRING",
+      "title": ["自己喝，是日常", "送给你，是心意"],
+      "link": "选一罐你的春天",
+      "cardEyebrows": {
+        "FAMILY": "FOR EVERYDAY",
+        "GIFT": "FOR SOMEONE SPECIAL"
+      },
+      "buyLabel": "立即下单",
+      "finePrint": "包邮 · 可附手写卡片 · 偏远地区每罐补运费差价"
+    },
+    "more": {
+      "eyebrow": "03 / MORE THAN AN APPLE",
+      "title": ["从一颗苹果，", "长出更多连接"],
+      "adoption": {
+        "eyebrow": "YOUR OWN LITTLE ORCHARD",
+        "title": "认领一棵苹安树",
+        "text": ["给树挂上你的名字，把这一季的甜，", "分几次寄给在意的人。"],
+        "priceSuffix": "起 / 本季"
+      },
+      "sponsorship": {
+        "eyebrow": "GOOD APPLES, GOOD COMPANY",
+        "title": "我们请你喝茶",
+        "text": ["读书会、技术聚会，或一次久违的相聚。", "你们聚在一起，苹果算我的。"],
+        "cta": "申请社区活动赞助"
+      }
+    },
+    "journey": {
+      "eyebrow": "04 / APPLES ON THEIR WAY",
+      "title": ["苹果在路上，", "心意也是"],
+      "text": ["从太行山深处出发，一箱一箱，点亮远方。", "也许下一站，就是你在的城市。"],
+      "link": "看看苹果都去了哪里",
+      "postmark": "从山里寄出",
+      "postmarkCaption": "FROM THE MOUNTAINS, TO YOU",
+      "boxesLabel": "箱苹果的旅程",
+      "citiesLabel": "座城市被连接",
+      "note": "每一箱苹果，都是一份真实的心意。"
+    },
+    "diary": {
+      "eyebrow": "NOTES FROM THE TEA GARDEN",
+      "title": "茶园里，今天发生的小事",
+      "note": "新鲜的消息，慢慢更新",
+      "empty": ["春采的消息，正在慢慢整理。", "第一篇茶园日记，即将从山里寄来。"],
+      "photoAlt": "茶园日记照片"
+    },
+    "faq": {
+      "eyebrow": "A LITTLE PROMISE",
+      "title": ["从茶园到杯里，", "都想照顾好你"],
+      "pick": [0, 1, 2, 3, 4],
+      "guideLink": "完整选购与配送指南"
+    }
+  },
+  "pages": {
+    "buy": {
+      "eyebrow": "A CAN OF SPRING",
+      "title": "挑一罐，刚刚好的春天",
+      "description": "来自云南省普洱市山区。当季现采，认真挑拣装罐，把这一季的清香寄给你。",
+      "mobileTitle": "一罐好春茶，快递到家",
+      "cardMessagePlaceholder": "有些话，想借一罐茶告诉你。",
+      "summaryTitle": "这一罐春天",
+      "shippingNote": "由快递配送，付款后 48 小时内发货。偏远地区按罐补运费差价，金额在付款前显示。",
+      "afterSalesNote": "收货 48 小时内如有破损，请拍照联系我们，核实后通过原支付渠道退款。",
+      "afterSalesTitle": "配送与售后",
+      "serviceBadges": ["快递配送", "破损包赔", "48 小时内发货"],
+      "deliveryNote": "付款后 48 小时内发货，6 月 30 日前发完",
+      "summaryPromises": [
+        "付款后 48 小时内发货",
+        "产地挑拣装罐，快递送到",
+        "破损包赔，收货 48 小时内拍照"
+      ]
+    },
+    "order": {
+      "eyebrow": "A LITTLE SPRING, ON ITS WAY",
+      "lookupTitle": "你的茶，走到哪了？",
+      "resultTitle": "这一份心意，有了回音",
+      "paidTitle": "春茶，准备出发",
+      "shippedTitle": "你的春天，正在路上",
+      "followAlt": "公众号二维码",
+      "followText": "关注公众号，收下茶园的下一封来信。",
+      "emptyTitle": "一罐春茶，一份惦记"
+    },
+    "product": {
+      "eyebrow": "A CAN OF SPRING",
+      "titleTemplate": "{brand}{name}｜{count}包·每包{weight}g·{price}",
+      "notFound": "这罐茶还没上架"
+    },
+    "guide": {
+      "eyebrow": "A FEW THINGS BEFORE SPRING ARRIVES",
+      "title": ["先了解清楚，", "再把春天带回家"],
+      "intro": "从规格到寄送，把你关心的事放在这里。",
+      "originTitle": "茶叶来自哪里？",
+      "originText": "这里介绍茶园和制茶，不提供私人住址或茶园具体定位。",
+      "productsTitle": "选日常，还是选心意？"
+    }
+  },
+  "faqs": [
+    [
+      "茶叶来自哪里？",
+      "云上茶舍的茶园位于云南省普洱市山区。我们分享茶园与制茶，不提供茶园具体定位和茶农的私人住址。"
+    ],
+    [
+      "日常口粮茶和明前礼盒有什么区别？",
+      "日常口粮茶每罐 20 包，每包约 5g；明前礼盒每罐 12 包，每包约 8g。具体规格和价格见各商品详情及下单页。"
+    ],
+    ["多久发货？", "付款后 48 小时内发货，由快递配送；到货时间以实际物流为准。"],
+    ["偏远地区怎么寄？", "包邮；偏远地区按罐补运费差价，具体以下单页显示为准。"],
+    ["怎么保存？", "密封、避光、防潮，常温保存即可；开封后尽早饮用。"]
+  ],
+  "seo": {
+    "pages": {
+      "/": {
+        "title": "云上茶舍｜云南高山春茶·日常装与礼盒装",
+        "description": "云上茶舍的茶园位于云南省普洱市山区。了解日常装与礼盒装规格、快递配送与售后规则。",
+        "label": "首页",
+        "keywords": ["云上茶舍", "云南春茶", "高山茶"]
+      },
+      "/buy": {
+        "title": "云上茶舍买茶叶｜日常装、礼盒装与快递配送",
+        "description": "挑选云南省普洱市山区的春茶，查看当前价格、库存和快递配送规则。",
+        "label": "买茶叶",
+        "keywords": ["云上茶舍", "买茶叶", "春茶礼盒"]
+      },
+      "/guide": {
+        "title": "云上茶舍选购指南｜规格、产地、配送与售后",
+        "description": "一页看清云上茶舍的规格、产地、配送与售后规则。",
+        "label": "选购与配送指南",
+        "keywords": ["云上茶舍", "茶叶选购指南"]
+      }
+    },
+    "product": {
+      "title": "{brand}{name}｜{count}包·每包{weight}g",
+      "description": "{description}来自{origin}，查看当前价格、库存和配送规则。",
+      "keywords": ["{brand}", "{name}"]
+    },
+    "brandDescription": "{tagline}，茶园位于{origin}的季节性茶叶品牌。",
+    "alternateName": "{brand}茶叶",
+    "place": null,
+    "llmsIntro": "{brand}是由{publisher}运营的季节性茶叶品牌，茶园位于{origin}。",
+    "llmsFacts": [
+      "产地：{origin}。",
+      "本季销售时间：{seasonStart}至{seasonEnd}。付款后48小时内发货。"
+    ]
+  },
+  "images": {
+    "FAMILY": {
+      "src": "/images/example/everyday.svg",
+      "width": 1536,
+      "height": 1024,
+      "alt": "日常装茶叶"
+    },
+    "GIFT": {
+      "src": "/images/example/gift.svg",
+      "width": 1536,
+      "height": 1024,
+      "alt": "茶叶礼盒"
+    },
+    "PA": null,
+    "FG": null,
+    "hero": {
+      "src": "/images/example/hero.svg",
+      "width": 1672,
+      "height": 1000,
+      "alt": "云南山间茶园"
+    },
+    "community": null
+  }
+}

@@ -1,5 +1,4 @@
-import site from '../../config/site.json';
-const PAYMENT_PROJECT = site.paymentProject;
+import { PAYMENT_PROJECT } from './payment-project';
 import { sessionForOrder, expireConfirmedSession } from './checkout-sessions';
 import Stripe from 'stripe';
 import { HttpError, isDemo, assert, boundedBody } from './security';
@@ -7,8 +6,8 @@ import { rebuildMap } from './database';
 import { couponLabel } from './coupon-format';
 import { money } from './shared';
 import { paymentEnvironment, type PaymentMethodChoice } from './payment-experience';
-const INTEGRATION_IDENTIFIER = site.paymentProject + '-opnqfrst';
 const API_VERSION = '2026-09-30.endive';
+const INTEGRATION_IDENTIFIER = PAYMENT_PROJECT + '-hosted';
 export function assertPaymentBrowser(request: Request) {
   assert(
     !paymentEnvironment(request.headers.get('user-agent') || '').wechat,
@@ -79,7 +78,7 @@ export async function createSession(
             name: label,
             ...(order.discount_amount > 0
               ? {
-                  description: `商品及运费原额 ¥${money(order.original_amount)}；${couponLabel(order.coupon_percent_off)}券仅优惠1件 −¥${money(order.discount_amount)}；实付 ¥${money(order.amount)}`,
+                  description: `商品及运费原额 ¥${money(order.original_amount)}；${couponLabel(order.coupon_percent_off)}券仅优惠1箱 −¥${money(order.discount_amount)}；实付 ¥${money(order.amount)}`,
                 }
               : {}),
           },

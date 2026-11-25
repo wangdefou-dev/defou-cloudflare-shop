@@ -14,7 +14,7 @@ class D1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(readFileSync('migrations/' + file, 'utf8'));
-    this.db.exec(readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
+    this.db.exec(readFileSync('scripts/seed.sql', 'utf8'));
     this.db.exec('UPDATE products SET stock=100,active=1');
   }
   prepare(sql: string) {
@@ -254,7 +254,7 @@ function stripeMock(amount: number) {
     refunded: state.refunded === state.amount,
     disputed: false,
     payment_intent: paymentIntent,
-    metadata: { project: 'orchard-shop', order_id: orderId },
+    metadata: { project: 'defou-shop', order_id: orderId },
     refunds: { object: 'list', data: listedRefunds(), has_more: false, url: '/v1/refunds' },
     ...state.chargePatch,
   });
@@ -298,7 +298,7 @@ function stripeMock(amount: number) {
           currency: 'cny',
           amount: state.amount,
           amount_received: state.amount,
-          metadata: { project: 'orchard-shop', order_id: orderId },
+          metadata: { project: 'defou-shop', order_id: orderId },
           latest_charge: charge(),
           ...state.paymentPatch,
         });
@@ -315,7 +315,7 @@ function stripeMock(amount: number) {
       key = request.headers.get('idempotency-key') || '';
     assert(key, 'Every refund write needs a stable idempotency key');
     assert.equal(body.get('payment_intent'), paymentIntent);
-    assert.equal(body.get('metadata[project]'), 'orchard-shop');
+    assert.equal(body.get('metadata[project]'), 'defou-shop');
     assert.equal(body.get('metadata[order_id]'), orderId);
     assert(body.get('metadata[refund_request_id]'));
     const cents = Number(body.get('amount'));
@@ -347,7 +347,7 @@ function stripeMock(amount: number) {
       status: state.status,
       created: Math.floor(Date.now() / 1000),
       metadata: {
-        project: 'orchard-shop',
+        project: 'defou-shop',
         order_id: orderId,
         refund_request_id: body.get('metadata[refund_request_id]'),
       },
@@ -898,7 +898,7 @@ test('an open adoption shipping checkout blocks a parent refund and database rac
   db.prepare('UPDATE orders SET stripe_payment_intent=? WHERE id=?').run(paymentIntent, parentId);
   db.exec("UPDATE shipments SET status='awaiting_payment' WHERE id='refund-shipment'");
   await mocked(88800, async ({ state }) => {
-    state.paymentPatch = { metadata: { project: 'orchard-shop', order_id: parentId } };
+    state.paymentPatch = { metadata: { project: 'defou-shop', order_id: parentId } };
     const checked = await call(env, '/admin/refunds/preview', { order_id: parentId });
     assert.equal(checked.status, 200);
     assert.equal(checked.data.can_refund, false);

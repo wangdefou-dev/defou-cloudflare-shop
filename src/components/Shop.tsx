@@ -1,4 +1,4 @@
-import site from '../../config/site.json';
+import { STORE } from '../lib/store-config';
 import { checkoutPayload, useCheckoutSubmission } from './checkout-client';
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, Check, Package, ShieldCheck, Truck, TreeDeciduous } from 'lucide-react';
@@ -17,8 +17,17 @@ import {
   Turnstile,
   useConfig,
 } from './ui';
-import { money, shippingFee } from '../lib/shared';
-import { APPLE_UNIT_WEIGHTS, ORIGIN_LABEL } from '../lib/content';
+import {
+  addDays,
+  cnMonthDay,
+  maxQtyPerOrder,
+  money,
+  retailSpec,
+  SEASON_END,
+  shippingFee,
+} from '../lib/shared';
+import { APPLE_PRODUCTS, APPLE_UNIT_WEIGHTS, ORIGIN_LABEL, SEASON_PRICES } from '../lib/content';
+import CATALOG from '../lib/catalog-snapshot.json';
 import ProductPhoto from './ProductPhoto';
 import CouponField, { useCoupon } from './CouponField';
 import { usePaymentEnvironment, WeChatBrowserNotice } from './PaymentOptions';
@@ -59,7 +68,7 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
     total = (product?.price || 0) * qty + fee - coupon.discount,
     days = Math.max(
       0,
-      Math.ceil((Date.parse(site.season.end+'T00:00:00+08:00')+86400000 - Date.now()) / 86400000),
+      Math.ceil((Date.parse(addDays(SEASON_END, 1) + 'T00:00:00+08:00') - Date.now()) / 86400000),
     );
   async function submit(e: React.SyntheticEvent) {
     e.preventDefault();
@@ -99,20 +108,26 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
   }
   return (
     <div className="page-wrap">
+      {c?.settings?.announcement && (
+        <p className="alert shop-announcement" role="status">
+          {c.settings.announcement}
+        </p>
+      )}
       {paymentEnvironment.wechat && <WeChatBrowserNotice onOpen={() => setGuide({})} />}
       <PageIntro
-        eyebrow={tree ? 'A TREE WITH YOUR NAME' : 'A BOX OF AUTUMN'}
-        title={tree ? '让一棵树，记住你的名字' : '挑一箱，刚刚好的秋天'}
+        eyebrow={tree ? 'A TREE WITH YOUR NAME' : STORE.pages.buy.eyebrow}
+        title={tree ? '让一棵树，记住你的名字' : STORE.pages.buy.title}
       >
         {tree
-          ? '在山间果园，认领一季清甜，分几次寄给自己和在意的人。'
-          : `来自${ORIGIN_LABEL}。认真挑选打包，把这一季的清甜寄给你。`}
+          ? '在太行山深处，认领一季清甜，分几次寄给自己和在意的人。'
+          : STORE.pages.buy.description.replace('{origin}', ORIGIN_LABEL)}
       </PageIntro>
       {tree && (
         <div className="deadline-banner">
           <TreeDeciduous size={20} />
           <span>
-            本季预约截止 <strong>{site.season.end}</strong> · 还有 <strong>{days}</strong> 天
+            本季预约截止 <strong>{SEASON_END.replaceAll('-', '.')}</strong> · 还有{' '}
+            <strong>{days}</strong> 天
           </span>
           <a href="/tree/my">已有苹安树？预约发货 ↗</a>
         </div>
@@ -140,7 +155,12 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
                     }}
                   >
                     <div className="sku-visual">
-                      <ProductPhoto sku={s} sizes="(max-width: 1200px) 220px, 270px" priority />
+                      <ProductPhoto
+                        sku={s}
+                        src={p?.image_url}
+                        sizes="(max-width: 1200px) 220px, 270px"
+                        priority
+                      />
 
                       <span className="selection-circle">{sku === s && <Check size={13} />}</span>
                     </div>
@@ -154,41 +174,26 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
                             ? 'FOR SOMEONE SPECIAL'
                             : 'FOR EVERYDAY'}
                       </span>
-                      <h3>
-                        {p?.name ||
-                          (s === 'PA'
-                            ? '平安树'
-                            : s === 'FG'
-                              ? '富贵树'
-                              : s === 'FAMILY'
-                                ? '家庭装'
-                                : '礼盒装')}
-                      </h3>
+                      <h3>{p?.name || CATALOG[s as keyof typeof CATALOG].name}</h3>
                       <p>
                         {tree
                           ? premium
                             ? '15 箱 · 每箱 6 斤 · 共 90 斤'
                             : '8 箱 · 每箱 10 斤 · 共 80 斤'
-                          : premium
-                            ? '8 个 · 约 2.8kg'
-                            : '22 个 · 约 5.5kg'}
+                          : retailSpec(
+                              p?.count_per_box ?? APPLE_PRODUCTS[premium ? 1 : 0].count,
+                              p?.unit_weight_g ?? APPLE_PRODUCTS[premium ? 1 : 0].weight,
+                            )}
                       </p>
                       <span className="unit-weight">
-                        单果约 {APPLE_UNIT_WEIGHTS[s as keyof typeof APPLE_UNIT_WEIGHTS]}g
+                        {STORE.words.weightShort}{' '}
+                        {p?.unit_weight_g ??
+                          APPLE_UNIT_WEIGHTS[s as keyof typeof APPLE_UNIT_WEIGHTS]}
+                        g
                       </span>
                       <div className="sku-bottom">
                         <strong>
-                          ¥
-                          {money(
-                            p?.price ||
-                              (s === 'PA'
-                                ? 88800
-                                : s === 'FG'
-                                  ? 188800
-                                  : s === 'FAMILY'
-                                    ? 10800
-                                    : 12800),
-                          )}
+                          ¥{money(p?.price || SEASON_PRICES[s as keyof typeof SEASON_PRICES])}
                         </strong>
                         <small>
                           {c
@@ -197,7 +202,7 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
                               : p?.stock > 0
                                 ? tree
                                   ? `剩余 ${p.stock} 棵`
-                                  : `库存 ${p.stock} 箱`
+                                  : `库存 ${p.stock} ${STORE.words.pack}`
                                 : p?.restock_date
                                   ? `下一批 ${p.restock_date}`
                                   : '本批售罄'
@@ -213,8 +218,12 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
             <div className="detail-links">
               {!tree && (
                 <>
-                  <a href="/apples/family">家庭装详情 ↗</a>
-                  <a href="/apples/gift">礼盒装详情 ↗</a>
+                  {['FAMILY', 'GIFT'].map((s, i) => (
+                    <a key={s} href={i ? '/apples/gift' : '/apples/family'}>
+                      {(c?.products.find((x: any) => x.sku === s)?.name ||
+                        CATALOG[s as 'FAMILY'].name) + '详情 ↗'}
+                    </a>
+                  ))}
                 </>
               )}
               <a href="/guide">选购与配送指南 ↗</a>
@@ -222,9 +231,14 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
             {!tree && (
               <div className="qty-row">
                 <span>
-                  带几箱回家？<small>每种规格每单最多 20 箱</small>
+                  {STORE.words.qtyQuestion}
+                  <small>{`每种规格每单最多 ${maxQtyPerOrder()} ${STORE.words.pack}`}</small>
                 </span>
-                <Quantity value={qty} onChange={setQty} max={Math.min(20, product?.stock || 20)} />
+                <Quantity
+                  value={qty}
+                  onChange={setQty}
+                  max={Math.min(maxQtyPerOrder(), product?.stock || maxQtyPerOrder())}
+                />
               </div>
             )}
             {tree && (
@@ -300,7 +314,7 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
                         maxLength={60}
                         rows={3}
                         onChange={(e) => setAddress({ ...address, card_message: e.target.value })}
-                        placeholder="有些话，想借一箱苹果告诉你。"
+                        placeholder={STORE.pages.buy.cardMessagePlaceholder}
                       />
                     </Field>
                     <Field label="寄件人署名">
@@ -327,7 +341,7 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
               <div className="rules">
                 <h3>这一季，约定好这些事</h3>
                 <p>
-                  所有箱数请在 {site.season.end} 前预约，期望发货日期不早于两天后，且不晚于 {site.season.end}。剩余未预约箱数将在 销售季结束后发往最近一次收件地址；没有历史地址的，由运营电话联系。
+                  {`所有箱数请在 ${cnMonthDay(SEASON_END)}前预约，期望发货日期不早于两天后，且不晚于 ${cnMonthDay(SEASON_END)}。剩余未预约箱数将在 ${cnMonthDay(addDays(SEASON_END, 1))}后发往最近一次收件地址；没有历史地址的，由运营电话联系。`}
                 </p>
                 <p>
                   认领果树不足量时，以同一果园同等级苹果补足。偏远地区每次预约按箱补运费差价，默认
@@ -350,23 +364,23 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
                 ，同意为发货与开票处理必要个人信息。
               </span>
             </label>
-            <Turnstile demo={c?.demo} siteKey={c?.turnstile_site_key} onToken={setToken} />
+            <Turnstile siteKey={c?.turnstile_site_key} onToken={setToken} />
           </section>
         </div>
         <aside className="order-summary">
-          <div className="eyebrow">YOUR LITTLE AUTUMN</div>
-          <h2>{tree ? '你的苹安树' : '这一箱秋天'}</h2>
+          <div className="eyebrow">{STORE.words.summaryEyebrow}</div>
+          <h2>{tree ? '你的苹安树' : STORE.pages.buy.summaryTitle}</h2>
           <div className="summary-picture">
-            <ProductPhoto sku={sku} sizes="300px" />
+            <ProductPhoto sku={sku} src={product?.image_url} sizes="300px" />
           </div>
-          <p className="fine-print">果品及包装以实物为准</p>
+          <p className="fine-print">{STORE.words.productNote}</p>
           <div className="summary-row">
             <span>{product?.name || '所选规格'}</span>
             <strong>¥{money((product?.price || 0) * qty)}</strong>
           </div>
           <div className="summary-row">
             <span>{tree ? '本季专属树' : '数量'}</span>
-            <span>{tree ? '1 棵' : qty + ' 箱'}</span>
+            <span>{tree ? '1 棵' : qty + ' ' + STORE.words.pack}</span>
           </div>
           <div className="summary-row">
             <span>配送运费</span>
@@ -380,7 +394,7 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
           )}
           {coupon.discount > 0 && (
             <div className="summary-row coupon-summary">
-              <span>优惠券（仅一箱）</span>
+              <span>{`优惠券（仅一${STORE.words.pack}）`}</span>
               <strong>− ¥{money(coupon.discount)}</strong>
             </div>
           )}
@@ -400,7 +414,9 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
             {!c
               ? '读取商品中'
               : !c.sales_open
-                ? '暂未开放购买'
+                ? c.settings?.sales_paused
+                  ? '店铺暂停接单'
+                  : '暂未开放购买'
                 : !product?.stock
                   ? '本批售罄，等待下一批'
                   : tree
@@ -418,15 +434,15 @@ export default function Shop({ kind }: { kind: 'retail' | 'adoption' }) {
           <div className="summary-promises">
             <span>
               <Truck size={16} />
-              {tree ? '认领后 3 天内挂牌，按预约发货' : '付款后 48 小时内发货'}
+              {tree ? '认领后 3 天内挂牌，按预约发货' : STORE.pages.buy.summaryPromises[0]}
             </span>
             <span>
               <Package size={16} />
-              产地挑选打包，快递送到
+              {STORE.pages.buy.summaryPromises[1]}
             </span>
             <span>
               <ShieldCheck size={16} />
-              坏果按个赔，收货 48 小时内拍照
+              {STORE.pages.buy.summaryPromises[2]}
             </span>
           </div>
         </aside>

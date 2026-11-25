@@ -43,7 +43,7 @@ export async function confirmedRefundFixture<T>(env: Env, intent: string, run: (
         amount_received: o.amount,
         status: 'succeeded',
         livemode: env.STRIPE_MODE === 'live',
-        metadata: { project: 'orchard-shop', order_id: o.id },
+        metadata: { project: 'defou-shop', order_id: o.id },
         latest_charge: charge,
       });
     if (u.pathname === '/v1/refunds')

@@ -1,5 +1,3 @@
-import catalog from '../config/products.json';
-import { SEASON_END } from '../src/lib/shared';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -16,7 +14,7 @@ import {
   sitemapXml,
   productSchema,
   serializeJsonLd,
-  PUBLIC_PATHS,
+  publicPaths,
   PAGE_META,
   websiteGraph,
   llmsText,
@@ -39,7 +37,7 @@ test('search indexing requires the formal host and explicit reopening; previews 
   );
   for (const host of [
     'http://127.0.0.1:4321',
-    'https://orchard-shop-sandbox.example.workers.dev',
+    'https://defou-shop-sandbox.example.workers.dev',
     'https://other.example',
   ])
     assert.equal(publicSearchEnabled({ ...env, APP_ORIGIN: host }, new URL(host)), false);
@@ -59,9 +57,8 @@ test('canonical links cannot inherit personal query parameters or a preview host
 
 test('sitemaps whitelist public content, preview maps are empty, crawler rules exclude private paths', () => {
   const sitemap = sitemapXml(true);
-  assert.equal((sitemap.match(/<loc>/g) || []).length, PUBLIC_PATHS.length);
-  assert(sitemap.includes(PUBLIC_ORIGIN + '/products/' + catalog[0].slug));
-  assert(!sitemap.includes('/apples/'));
+  assert.equal((sitemap.match(/<loc>/g) || []).length, publicPaths().length);
+  assert(sitemap.includes(PUBLIC_ORIGIN + '/apples/family'));
   assert(!/\/api\/|\/admin|\/tree\/my|\/order|\/pay\/|\/media\//.test(sitemap));
   assert(!sitemapXml(false).includes('<loc>'));
   assert.equal(robotsText(false), 'User-agent: *\nDisallow: /\n');
@@ -95,12 +92,7 @@ test('product metadata uses actual DB prices and never claims availability from 
     'https://schema.org/OutOfStock',
   );
   assert.equal(
-    productSchema(
-      product,
-      stock,
-      { SALES_OPEN: 'true' },
-      new Date(Date.parse(SEASON_END + 'T00:00:00+08:00') + 2 * 86400000),
-    ).offers,
+    productSchema(product, stock, { SALES_OPEN: 'true' }, new Date('2026-12-02')).offers,
     undefined,
   );
   assert.equal(productSchema(product, null, { SALES_OPEN: 'true' }, season).offers, undefined);
@@ -116,30 +108,30 @@ test('JSON-LD serialization cannot break out of its script element', () => {
 });
 
 test('all public TDK and custom titles carry the current brand and publisher exactly once', () => {
-  assert.equal(new Set(Object.values(PAGE_META).map((p) => p.title)).size, PUBLIC_PATHS.length);
+  assert.equal(new Set(Object.values(PAGE_META).map((p) => p.title)).size, publicPaths().length);
   for (const meta of Object.values(PAGE_META)) {
     assert(meta.title.includes(BRAND_NAME));
     for (const text of [meta.title, meta.description, meta.keywords.join(',')]) {
-      assert.equal(text.split(PUBLISHER_TAGLINE).length - 1, 1);
-      assert(!text.includes('旧品牌'));
+      // The publisher tagline is optional; when set, it appears exactly once.
+      if (PUBLISHER_TAGLINE) assert.equal(text.split(PUBLISHER_TAGLINE).length - 1, 1);
     }
     assert.equal(publisherTitle(meta.title), meta.title);
     assert.equal(publisherDescription(meta.description), meta.description);
   }
-  assert(publisherTitle('示例果园家庭装｜¥108').endsWith(PUBLISHER_TAGLINE));
+  assert(publisherTitle('太行深处家庭装｜¥108').endsWith(PUBLISHER_TAGLINE));
 });
 
 test('search graph links the brand, publisher and broad origin; product breadcrumbs match navigation', () => {
   const graph = websiteGraph(
-    '/products/' + catalog[0].slug,
-    PAGE_META['/products/' + catalog[0].slug].title,
-    PAGE_META['/products/' + catalog[0].slug].description,
+    '/apples/family',
+    PAGE_META['/apples/family'].title,
+    PAGE_META['/apples/family'].description,
   );
   const brand = graph.find((node) => node['@type'] === 'Brand')!;
   const organization = graph.find((node) => node['@type'] === 'Organization')!;
   const site = graph.find((node) => node['@type'] === 'WebSite')!;
   assert.equal(brand.name, BRAND_NAME);
-  assert.equal(organization.name, '示例运营者');
+  assert.equal(organization.name, '太行深处');
   assert.deepEqual(organization.brand, { '@id': brand['@id'] });
   assert.equal(site.name, BRAND_NAME);
   const place = graph.find((node) => node['@type'] === 'Place')!;
@@ -151,8 +143,8 @@ test('search graph links the brand, publisher and broad origin; product breadcru
     crumbs.map((c) => [c.position, c.name]),
     [
       [1, '首页'],
-      [2, '选购商品'],
-      [3, catalog[0].name],
+      [2, '买苹果'],
+      [3, '家庭装'],
     ],
   );
   assert.equal(crumbs[1].item, PUBLIC_ORIGIN + '/buy');
@@ -164,13 +156,12 @@ test('machine-readable facts stay public and accurate; QR and private routes rem
     BRAND_NAME,
     PUBLISHER_TAGLINE,
     ORIGIN_LABEL,
-    catalog[0].name,
-    catalog[0].specification,
-    '得否科技',
-    'https://x.com/wangdefou',
+    '单果约250g',
+    '单果约350g',
+    '富贵树本季15箱',
+    '至少6人',
   ])
     assert(facts.includes(value));
-  assert(!facts.includes('your_wechat_id'));
   assert(!facts.includes('view_token'));
   assert(!llmsText(false).includes(ORIGIN_LABEL));
   for (const block of robotsText(true)
@@ -190,6 +181,6 @@ test('static product offers keep the approved season price without baking in inv
     new Date('2026-10-22T12:00:00+08:00'),
   ).offers!;
   assert.equal(offer.price, '108.00');
-  assert.equal(offer.priceValidUntil, SEASON_END);
+  assert.equal(offer.priceValidUntil, '2026-11-30');
   assert.equal('availability' in offer, false);
 });

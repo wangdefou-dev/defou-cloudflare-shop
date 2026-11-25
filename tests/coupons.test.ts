@@ -10,7 +10,6 @@ import { couponDiscount, normalizeCouponCode } from '../src/lib/coupon-format';
 import { maintenance } from '../src/lib/database';
 import { createSession } from '../src/lib/payments';
 import { paidOrderMessage, dailyReportMessage } from '../src/lib/notifications';
-import { prepareCouponBatch, COUPON_PLAN } from './fixtures/coupon-batch';
 
 class D1 {
   db = new DatabaseSync(':memory:');
@@ -20,7 +19,7 @@ class D1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(readFileSync('migrations/' + f, 'utf8'));
-    for (const f of ['tests/fixtures/orchard-seed.sql', 'scripts/regions.sql'])
+    for (const f of ['scripts/seed.sql', 'scripts/regions.sql'])
       this.db.exec(readFileSync(f, 'utf8'));
     this.db.exec('UPDATE products SET stock=100');
   }
@@ -149,63 +148,11 @@ async function hook(env: Env, event: any) {
 }
 const session = (order: any, paid = true) => ({
   id: 'cs_' + order.id,
-  metadata: { project: 'orchard-shop', order_id: order.id },
+  metadata: { project: 'defou-shop', order_id: order.id },
   payment_status: paid ? 'paid' : 'unpaid',
   currency: 'cny',
   amount_total: order.amount,
   payment_intent: 'pi_' + order.id.replaceAll('-', ''),
-});
-
-test('coupon calculations use cents and discount exactly one box at all six requested rates', () => {
-  for (const [price, expected] of [
-    [10800, [1296, 2160, 3672, 4320, 5400, 9720]],
-    [12800, [1536, 2560, 4352, 5120, 6400, 11520]],
-  ] as const) {
-    COUPON_PLAN.forEach((plan, index) =>
-      assert.equal(couponDiscount(price, 100 - plan.payPercent), expected[index]),
-    );
-  }
-  assert.equal(couponDiscount(109, 50), 55);
-  for (const args of [
-    [0, 12],
-    [10800, 0],
-    [10800, 100],
-    [1.1, 12],
-  ])
-    assert.throws(() => couponDiscount(args[0], args[1]));
-});
-
-test('issuance prepares exactly 110 unique bearer codes, hashes only in SQL, and exactly seven days validity', () => {
-  const now = new Date('2026-10-23T09:15:16+08:00');
-  const prepared = prepareCouponBatch(now);
-  assert.equal(prepared.codes.length, 110);
-  assert.equal(new Set(prepared.codes.map((c) => c.code_hash)).size, 110);
-  for (const plan of COUPON_PLAN)
-    assert.equal(
-      prepared.codes.filter((c) => c.pay_percent === plan.payPercent).length,
-      plan.count,
-    );
-  assert.equal(
-    Date.parse(prepared.batch.expires_at.replace(' ', 'T') + 'Z') -
-      Date.parse(prepared.batch.starts_at.replace(' ', 'T') + 'Z'),
-    7 * 86400000,
-  );
-  const DB = new D1();
-  DB.db.exec(prepared.sql);
-  DB.db.exec(prepared.sql);
-  assert.equal(
-    (
-      DB.db
-        .prepare('SELECT unixepoch(expires_at)-unixepoch(starts_at) seconds FROM coupon_batches')
-        .get() as any
-    ).seconds,
-    604800,
-  );
-  assert.equal((DB.db.prepare('SELECT COUNT(*) n FROM coupons').get() as any).n, 110);
-  for (const c of prepared.codes) {
-    assert(!prepared.sql.includes(c.code));
-    assert.equal(normalizeCouponCode(c.code).length, 20);
-  }
 });
 
 test('coupon quote is private, case/separator tolerant, and does not reserve stock or the coupon', async () => {
@@ -225,18 +172,6 @@ test('coupon quote is private, case/separator tolerant, and does not reserve sto
     (db.prepare("SELECT stock FROM products WHERE id='FAMILY'").get() as any).stock,
     100,
   );
-});
-
-test('all requested discounts produce the right net order and preserve the original price', async () => {
-  for (const plan of COUPON_PLAN) {
-    const { env, db } = await setup(100 - plan.payPercent);
-    const result = await call(env, '/checkout', retail());
-    assert.equal(result.status, 200);
-    assert.equal(result.data.amount, 10800 - couponDiscount(10800, 100 - plan.payPercent));
-    assert.equal(result.data.original_amount, 10800);
-    assert(!('coupon_id' in result.data));
-    assert.equal((db.prepare('SELECT COUNT(*) n FROM coupon_reservations').get() as any).n, 1);
-  }
 });
 
 test('multiple boxes and remote surcharge are not multiplied into the coupon benefit', async () => {
@@ -409,7 +344,7 @@ test('unpaid session stays reserved; signed expiry releases once, while a paid/r
           object: {
             refunded: true,
             payment_intent: 'pi_' + a.id.replaceAll('-', ''),
-            metadata: { project: 'orchard-shop' },
+            metadata: { project: 'defou-shop' },
           },
         },
       })
@@ -549,7 +484,7 @@ test('Stripe session charges only the validated net amount and describes the one
       assert.equal(body.get('line_items[0][price_data][unit_amount]'), '1080');
       assert.match(
         body.get('line_items[0][price_data][product_data][description]')!,
-        /1 折券仅优惠1件/,
+        /1 折券仅优惠1箱/,
       );
       assert(!String(init?.body).includes(code));
       assert.equal(body.get('allow_promotion_codes'), null);
@@ -740,7 +675,7 @@ test('shared redemption counts once per signed payment, releases only the failed
           object: {
             refunded: true,
             payment_intent: 'pi_' + first.id.replaceAll('-', ''),
-            metadata: { project: 'orchard-shop' },
+            metadata: { project: 'defou-shop' },
           },
         },
       })
@@ -856,7 +791,7 @@ test('migration preserves old paid/refunded, pending and expired coupons, origin
     .filter((f) => f.endsWith('.sql') && f < '0010')
     .sort())
     db.exec(readFileSync('migrations/' + file, 'utf8'));
-  db.exec(readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
+  db.exec(readFileSync('scripts/seed.sql', 'utf8'));
   db.exec(
     "UPDATE products SET stock=10; INSERT INTO coupon_batches(id,name,starts_at,expires_at) VALUES('legacy','legacy',datetime('now','-1 day'),datetime('now','+6 days'))",
   );

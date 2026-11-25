@@ -29,7 +29,7 @@ test('public asset delivery preserves conditional, HEAD and Range requests', asy
 test('only successful public assets get long browser caching', async () => {
   for (const [path, policy] of [
     ['/images/optimized/family-192-123456abcdef.webp', 'public, max-age=31536000, immutable'],
-    ['/brand/orchard-v1/icon-32.png', 'public, max-age=31536000, immutable'],
+    ['/brand/shop-v1/icon-32.png', 'public, max-age=31536000, immutable'],
     ['/images/orchard.webp', 'public, max-age=86400'],
     ['/_astro/client.ABCD1234.js', 'public, max-age=31536000, immutable'],
   ]) {

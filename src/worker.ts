@@ -1,22 +1,14 @@
-import site from '../config/site.json';
 import { offlineResponse } from './lib/site-status';
 import { bundledAsset } from './lib/static-assets';
-import { staticPage } from './lib/static-pages';
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const started = performance.now();
     const offline = offlineResponse(env, request);
     if (offline) return offline;
     const url = new URL(request.url);
-    if (
-      !site.features.orchard &&
-      ['/tree', '/treat', '/apples/family', '/apples/gift'].includes(
-        url.pathname.replace(/\/$/, ''),
-      )
-    )
-      return new Response('Not found', { status: 404, headers: { 'x-robots-tag': 'noindex' } });
     let response: Response;
-    const asset = (await bundledAsset(request, env.ASSETS)) || (await staticPage(request, env));
+    // Pages render per request (site content is editable in the admin); only bundled files are assets.
+    const asset = await bundledAsset(request, env.ASSETS);
     if (asset) response = asset;
     else if (url.pathname.startsWith('/api/')) {
       const { api } = await import('./lib/api');
@@ -67,10 +59,16 @@ export default {
           })
         : new Response('Not found', { status: 404 });
     } else {
-      if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
-        const { admin, HttpError } = await import('./lib/security');
+      // Old address of the site settings console.
+      if (url.pathname === '/studio' || url.pathname.startsWith('/studio/'))
+        return Response.redirect(new URL('/admin/studio', url).href, 302);
+      // Site settings sit under /admin (already behind Cloudflare Access) with their own list.
+      const studioPage =
+        url.pathname === '/admin/studio' || url.pathname.startsWith('/admin/studio/');
+      if (studioPage || url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
+        const { admin, studio, HttpError } = await import('./lib/security');
         try {
-          await admin(env, request);
+          await (studioPage ? studio : admin)(env, request);
         } catch (e) {
           return new Response(e instanceof HttpError ? e.message : 'Unauthorized', {
             status: e instanceof HttpError ? e.status : 401,
@@ -112,6 +110,9 @@ export default {
     });
   },
   async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext) {
+    // Scheduled jobs read the same site settings (brand name, report schedule) as pages.
+    const { loadSiteContent } = await import('./lib/site-content');
+    await loadSiteContent(env).catch(() => {});
     ctx.waitUntil(
       Promise.allSettled([
         import('./lib/database').then(({ maintenance }) => maintenance(env)),

@@ -1,4 +1,4 @@
-示例果园 · 省级足迹数据地图与城市参考点
+省级足迹数据地图与城市参考点
 
 当前交互地图使用本地 SVG 省级边界路径，Map by amCharts。
 原始 SVG：https://www.amcharts.com/static/svg-maps/chinaLow.svg
@@ -13,8 +13,6 @@ Copyright 2017-2025 The Apache Software Foundation.
 许可：Apache License, Version 2.0。完整 LICENSE 与 NOTICE 附在本文末尾。
 修改说明：只提取12组示意多边形，缩放平移至独立附图位置，不打包 ECharts 或 zrender 运行库。
 附图坐标是示意图形的屏幕位置，不是实际岛屿经纬度，不用于城市、收货地址或运输路径定位。
-
-
 
 叠加的苹果连线仅表示城市间连接，不是导航路线或快递实时位置。
 点位采用城市公共参考坐标，保留两位小数，不是客户、果园或住宅的定位。

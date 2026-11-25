@@ -1,0 +1,367 @@
+{
+  "brand": {
+    "name": "太行深处",
+    "publisher": "太行深处",
+    "publisherTagline": "",
+    "siteUrl": "https://shop.example.com",
+    "originLabel": "河北省邢台市西部太行山区",
+    "slogan": "把山里的秋天，寄给你。",
+    "footerNote": "一季一相逢。",
+    "shareImageAlt": "太行深处 · 太行山深处的一季清甜",
+    "themeColor": "#243c2d",
+    "copyrightYear": "2026",
+    "logo": null,
+    "contact": {
+      "title": "联系我们",
+      "wechat": "",
+      "wechatQr": null,
+      "officialQr": null,
+      "xUrl": "",
+      "xLabel": "",
+      "xHandle": ""
+    },
+    "showCredit": true
+  },
+  "season": {
+    "start": "2026-10-22",
+    "end": "2026-11-30",
+    "label": "2026 太行山秋收季",
+    "shortLabel": "2026 秋收季",
+    "status": "现已开售 · 11 月 30 日前发完",
+    "contentUpdated": "2026-10-22"
+  },
+  "features": {
+    "adoption": true,
+    "sponsorship": true,
+    "footprintMap": true,
+    "diary": true
+  },
+  "rules": {
+    "maxQtyPerOrder": 20,
+    "claimPerFruit": {
+      "FAMILY": 5,
+      "GIFT": 15,
+      "PA": 5,
+      "FG": 15
+    },
+    "sponsorMinHeadcount": 6,
+    "sponsorDaysAfterSeason": 5
+  },
+  "words": {
+    "product": "苹果",
+    "buy": "买苹果",
+    "buyCta": "带一箱秋天回家",
+    "pack": "箱",
+    "countUnit": "个",
+    "countLabel": "数量",
+    "weightLabel": "单果重量",
+    "totalLabel": "整箱重量",
+    "adoption": "认领苹安树",
+    "adoptionShort": "认领果树",
+    "myAdoption": "我的果树",
+    "sponsorship": "请你吃苹果",
+    "footprint": "苹果足迹",
+    "guide": "选购与配送指南",
+    "serviceLine": "快递配送 · 用心挑选 · 坏果按个赔",
+    "shopFooterTitle": "选购苹果",
+    "weightShort": "单果约",
+    "qtyQuestion": "带几箱回家？",
+    "summaryEyebrow": "YOUR LITTLE AUTUMN",
+    "productNote": "果品及包装以实物为准"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "来自太行山深处的一封秋日来信",
+      "title": ["把山里的秋天，", "寄给你"],
+      "description": "太行山深处的苹果，在枝头慢慢变甜，不赶时间的甜，刚刚好送到你手里。",
+      "primaryCta": "买一箱，尝尝秋天",
+      "secondaryCta": "认领一棵苹安树",
+      "sourceTag": "2026 秋收限定",
+      "videoLabel": "果园秋收短片",
+      "seal": {
+        "small": "自然熟成",
+        "title": ["一年", "只等这一季"],
+        "caption": "THE AUTUMN EDITION"
+      },
+      "scrollHint": "往下，走进果园",
+      "videoUrl": ""
+    },
+    "promises": [
+      {
+        "icon": "mountain",
+        "title": "太行山深处",
+        "note": "山地果园，自然的风土"
+      },
+      {
+        "icon": "sprout",
+        "title": "四季细心照料",
+        "note": "把细心，留给每颗苹果"
+      },
+      {
+        "icon": "truck",
+        "title": "苹果从产地出发",
+        "note": "付款后 48 小时内发货"
+      },
+      {
+        "icon": "heart",
+        "title": "坏果按个赔",
+        "note": "一箱心意，好好送到"
+      }
+    ],
+    "story": {
+      "eyebrow": "01 / DEEP IN THE TAIHANG MOUNTAINS",
+      "title": ["苹果的来处，", "藏着一整个秋天"],
+      "paragraphs": [
+        "河北省邢台市西部太行山区",
+        "每年霜降之后，山里的苹果慢慢染红，一年的等待，也到了收获的时候",
+        "山里的日照和温差，加上果农四季的细心，才有了咬下去的那声脆",
+        "我想把这份清甜的味道，寄得远一点",
+        "让这一箱苹果，成为你和远方的一点连接"
+      ],
+      "link": "一个苹果，要走过怎样的一年",
+      "noteTitle": ["风土有来处，", "心意有回响。"],
+      "noteCaption": "太行山深处 · 一季好苹果"
+    },
+    "process": {
+      "eyebrow": "A YEAR IN THE ORCHARD",
+      "title": "甜，是慢慢长出来的",
+      "description": [
+        "从修剪到装箱，一年的心思，都在这一口里。",
+        "每个季节认真照料，收获时仔细挑选。"
+      ],
+      "steps": [
+        ["冬", "修剪整枝", "让树好好休息"],
+        ["春", "疏花疏果", "把养分留给好果"],
+        ["夏", "细心套袋", "护住每一次生长"],
+        ["秋", "摘袋转果", "让阳光均匀照见"],
+        ["收", "分级装箱", "把好苹果寄给你"]
+      ]
+    },
+    "shop": {
+      "eyebrow": "02 / A BOX OF AUTUMN",
+      "title": ["自己吃，是日常", "送给你，是心意"],
+      "link": "选一箱你的秋天",
+      "cardEyebrows": {
+        "FAMILY": "FOR EVERYDAY",
+        "GIFT": "FOR SOMEONE SPECIAL"
+      },
+      "buyLabel": "立即下单",
+      "finePrint": "包邮 · 可附赠手写心意卡 · 偏远地区每箱补运费差价，默认 ¥20"
+    },
+    "more": {
+      "eyebrow": "03 / MORE THAN AN APPLE",
+      "title": ["从一颗苹果，", "长出更多连接"],
+      "adoption": {
+        "eyebrow": "YOUR OWN LITTLE ORCHARD",
+        "title": "认领一棵苹安树",
+        "text": ["给树挂上你的名字，把这一季的甜，", "分几次寄给在意的人。"],
+        "priceSuffix": "起 / 本季"
+      },
+      "sponsorship": {
+        "eyebrow": "GOOD APPLES, GOOD COMPANY",
+        "title": "我们请你吃苹果",
+        "text": ["读书会、技术聚会，或一次久违的相聚。", "你们聚在一起，苹果算我的。"],
+        "cta": "申请社区活动赞助"
+      }
+    },
+    "journey": {
+      "eyebrow": "04 / APPLES ON THEIR WAY",
+      "title": ["苹果在路上，", "心意也是"],
+      "text": ["从太行山深处出发，一箱一箱，点亮远方。", "也许下一站，就是你在的城市。"],
+      "link": "看看苹果都去了哪里",
+      "postmark": "从山里寄出",
+      "postmarkCaption": "FROM THE MOUNTAINS, TO YOU",
+      "boxesLabel": "箱苹果的旅程",
+      "citiesLabel": "座城市被连接",
+      "note": "每一箱苹果，都是一份真实的心意。"
+    },
+    "diary": {
+      "eyebrow": "NOTES FROM THE ORCHARD",
+      "title": "果园里，今天发生的小事",
+      "note": "新鲜的消息，慢慢更新",
+      "empty": ["秋收的消息，正在慢慢整理。", "第一篇采摘日记，即将从山里寄来。"],
+      "photoAlt": "果园采摘日记照片"
+    },
+    "faq": {
+      "eyebrow": "A LITTLE PROMISE",
+      "title": ["从枝头到手里，", "都想照顾好你"],
+      "pick": [0, 2, 4, 5, 3, 6],
+      "guideLink": "完整选购与配送指南"
+    }
+  },
+  "pages": {
+    "buy": {
+      "eyebrow": "A BOX OF AUTUMN",
+      "title": "挑一箱，刚刚好的秋天",
+      "description": "来自河北省邢台市西部太行山区。认真挑选打包，把这一季的清甜寄给你。",
+      "mobileTitle": "一箱好苹果，快递到家",
+      "cardMessagePlaceholder": "有些话，想借一箱苹果告诉你。",
+      "summaryTitle": "这一箱秋天",
+      "shippingNote": "由快递配送，零售付款后 48 小时内发货，认领按预约安排。偏远地区按箱补运费差价，金额在付款前显示。",
+      "afterSalesNote": "收货 48 小时内拍照并联系运营，250g 规格坏果每个赔 ¥5，350g 规格每个赔 ¥15，认领箱同样适用。退款由运营核实后通过原支付渠道处理。",
+      "afterSalesTitle": "配送与坏果售后",
+      "serviceBadges": ["快递配送", "坏果按个赔", "48 小时内发货"],
+      "deliveryNote": "付款后 48 小时内发货，11 月 30 日前发完",
+      "summaryPromises": [
+        "付款后 48 小时内发货",
+        "产地挑选打包，快递送到",
+        "坏果按个赔，收货 48 小时内拍照"
+      ]
+    },
+    "order": {
+      "eyebrow": "A LITTLE AUTUMN, ON ITS WAY",
+      "lookupTitle": "你的苹果，走到哪了？",
+      "resultTitle": "这一份心意，有了回音",
+      "paidTitle": "苹果，准备出发",
+      "shippedTitle": "你的秋天，正在路上",
+      "followAlt": "公众号二维码",
+      "followText": "关注公众号，收下果园的下一封来信。",
+      "emptyTitle": "一箱苹果，一份惦记"
+    },
+    "product": {
+      "eyebrow": "A BOX OF AUTUMN",
+      "titleTemplate": "{brand}{name}苹果｜{count}个·单果约{weight}g·{price}",
+      "notFound": "这箱苹果还没上架"
+    },
+    "guide": {
+      "eyebrow": "A FEW THINGS BEFORE AUTUMN ARRIVES",
+      "title": ["先了解清楚，", "再把秋天带回家"],
+      "intro": "从规格到寄送，把你关心的事放在这里。",
+      "originTitle": "苹果来自哪里？",
+      "originText": "这里介绍苹果和农事，不提供私人住址或果园具体定位。",
+      "productsTitle": "选日常，还是选心意？"
+    }
+  },
+  "faqs": [
+    [
+      "苹果来自哪里？",
+      "太行深处的果园位于河北省邢台市西部太行山区。我们分享苹果与农事，不提供果园具体定位和种植者的私人住址。"
+    ],
+    [
+      "家庭装和礼盒装有什么区别？",
+      "家庭装每箱 22 个，单果约 250g，总重约 5.5kg；礼盒装每箱 8 个，单果约 350g，总重约 2.8kg。果重为近似值，具体规格和价格见各商品详情及下单页。"
+    ],
+    [
+      "什么时候开售、多久发货？",
+      "本季现已开售，销售期为 2026 年 10 月 22 日至 11 月 30 日。零售订单付款后 48 小时内完成挑选打包，由快递配送；到货时间以实际物流为准。认领箱按预约安排发货。"
+    ],
+    [
+      "偏远地区怎么寄？",
+      "包邮；新疆、西藏、青海、内蒙古、海南等地区按箱补运费差价，默认每箱 ¥20，具体以下单页显示为准。"
+    ],
+    [
+      "收到坏果怎么办？",
+      "收货 48 小时内拍照并联系运营。250g 规格每个赔 ¥5，350g 规格每个赔 ¥15，认领箱同样适用，通过 Stripe 原路部分退款。"
+    ],
+    [
+      "可以送人、开票吗？",
+      "支持填写朋友的收件地址，礼物可附 60 字以内寄语。我们可开具电子普通发票，下单时填写开票信息即可。"
+    ],
+    [
+      "苹果怎么保存？",
+      "收到后先检查，放在阴凉通风处，或冷藏保存。避免与有磕碰的果子混放，尽早享用这一季的新鲜。"
+    ],
+    [
+      "认领一棵苹安树包含什么？",
+      "平安树本季共 8 箱，每箱 10 斤，单果约 250g；富贵树本季共 15 箱，每箱 6 斤，单果约 350g。支持专属铭牌和分次预约，可寄往不同地址。本季有效，不自动续费；请在 2026 年 11 月 30 日前完成全部预约。"
+    ]
+  ],
+  "seo": {
+    "pages": {
+      "/": {
+        "title": "太行深处苹果｜河北邢台太行山苹果·家庭装与礼盒装",
+        "description": "太行深处的果园位于河北省邢台市西部太行山区。了解家庭装与礼盒装规格、苹安树认领、社区活动苹果赞助，以及快递配送与坏果赔付规则。",
+        "label": "首页",
+        "keywords": [
+          "太行深处",
+          "太行深处苹果",
+          "河北邢台苹果",
+          "太行山苹果",
+          "苹果家庭装",
+          "苹果礼盒",
+          "果树认领"
+        ]
+      },
+      "/buy": {
+        "title": "太行深处买苹果｜家庭装、礼盒装与快递配送",
+        "description": "挑选太行山深处的苹果：家庭装单果约 250g，22 个、约 5.5kg；礼盒装单果约 350g，8 个、约 2.8kg。查看当前价格、库存和快递配送规则。",
+        "label": "买苹果",
+        "keywords": ["太行深处", "买苹果", "苹果家庭装", "苹果礼盒", "苹果产地直发", "快递配送"]
+      },
+      "/tree": {
+        "title": "太行深处苹安树认领｜平安树8箱、富贵树15箱",
+        "description": "在太行山深处认领一季清甜。平安树 8 箱，单果约 250g；富贵树 15 箱，单果约 350g。专属铭牌、分次预约、可寄不同地址。本季有效，不自动续费。",
+        "label": "认领苹安树",
+        "keywords": ["太行深处", "苹安树认领", "苹果树认养", "平安树", "富贵树", "分次寄送"]
+      },
+      "/treat": {
+        "title": "太行深处苹果赞助｜6人起社区活动申请",
+        "description": "太行深处为至少6人的读书会、技术聚会及社区活动提供苹果赞助。查看申请条件、日期要求和返图授权规则。",
+        "label": "社区活动苹果赞助",
+        "keywords": ["太行深处", "苹果赞助", "社区活动赞助", "读书会赞助", "技术聚会赞助"]
+      },
+      "/map": {
+        "title": "太行深处苹果足迹｜城市寄送与社区赞助",
+        "description": "记录苹果从太行山深处出发的旅程，查看购买、认领与社区赞助的城市级汇总；不展示收件人姓名、电话或详细地址。",
+        "label": "苹果足迹",
+        "keywords": ["太行深处", "苹果足迹", "苹果寄送城市", "社区苹果赞助"]
+      },
+      "/guide": {
+        "title": "太行深处选购指南｜规格、产地、配送与售后",
+        "description": "一页看清太行深处家庭装与礼盒装区别、河北省邢台市西部太行山区产地、2026 秋收季时间、快递配送、偏远运费、坏果赔付及苹安树预约规则。",
+        "label": "选购与配送指南",
+        "keywords": [
+          "太行深处",
+          "苹果选购指南",
+          "苹果规格",
+          "苹果产地",
+          "坏果赔付",
+          "苹果树认领规则"
+        ]
+      }
+    },
+    "product": {
+      "title": "{brand}{name}苹果｜{count}个·单果约{weight}g",
+      "description": "{description}来自{origin}，查看当前价格、库存和配送规则。",
+      "keywords": ["{brand}", "{name}苹果", "{count}个苹果", "单果约{weight}g", "河北邢台苹果"]
+    },
+    "brandDescription": "{tagline}，果园位于{origin}的季节性苹果品牌。",
+    "alternateName": "{brand}苹果",
+    "place": {
+      "name": "{brand}果园",
+      "region": "河北省",
+      "locality": "邢台市"
+    },
+    "llmsIntro": "{brand}是由{publisher}运营的季节性苹果品牌，果园位于{origin}。",
+    "llmsFacts": [
+      "产地：{origin}。仅公开区域，不公开具体果园坐标、村庄或家庭住址。",
+      "苹安树认领：平安树本季8箱，每箱10斤，单果约250g；富贵树本季15箱，每箱6斤，单果约350g。认领箱型与零售箱型不同，本季有效，不自动续费。",
+      "活动赞助：至少{minHeadcount}人，人工审核；日期与返图授权要求见申请页。",
+      "本季销售时间：{seasonStart}至{seasonEnd}。零售付款后48小时内发货，快递配送，偏远运费和售后见指南。"
+    ]
+  },
+  "images": {
+    "FAMILY": null,
+    "GIFT": null,
+    "PA": null,
+    "FG": null,
+    "hero": null,
+    "community": null
+  },
+  "map": {
+    "originCode": "130500",
+    "originName": "河北邢台",
+    "intro": "从河北邢台出发，把山里的清甜，寄向真实的收货城市。"
+  },
+  "notifications": {
+    "dailyHour": 0,
+    "dailyMinute": 5,
+    "startDate": "2026-10-22"
+  },
+  "analytics": {
+    "googleId": "",
+    "cloudflareToken": "",
+    "googleVerification": "",
+    "bingVerification": ""
+  }
+}

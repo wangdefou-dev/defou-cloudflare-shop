@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { chinaDate, SEASON_END, SPONSOR_MIN_HEADCOUNT } from './shared';
+import {
+  chinaDate,
+  cnMonthDay,
+  maxQtyPerOrder,
+  SEASON_END,
+  SPONSOR_MIN_HEADCOUNT,
+  sponsorLastDate,
+} from './shared';
 export const phone = z.string().regex(/^1[3-9]\d{9}$/, '请输入 11 位中国大陆手机号');
 export const address = z.object({
   recipient: z.string().trim().min(1).max(30),
@@ -34,8 +41,13 @@ export const checkout = z
   .object({
     request_id: z.uuid().optional(),
     type: z.enum(['retail', 'adoption']),
-    sku: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{0,39}$/, '商品编号无效'),
-    qty: z.number().int().min(1).max(20),
+    sku: z.enum(['FAMILY', 'GIFT', 'PA', 'FG']),
+    // The cap is a business rule edited in the site settings.
+    qty: z
+      .number()
+      .int()
+      .min(1)
+      .refine((q) => q <= maxQtyPerOrder(), { error: () => `每单最多 ${maxQtyPerOrder()} 件` }),
     phone,
     address: address.optional(),
     plate_name: z.string().trim().min(1).max(12).optional(),
@@ -51,8 +63,8 @@ export const checkout = z
   })
   .superRefine((v, c) => {
     if (v.type === 'adoption' && v.coupon_code)
-      c.addIssue({ code: 'custom', message: '优惠券仅限零售商品，不适用于认领' });
-    if (v.type === 'retail' && !v.address)
+      c.addIssue({ code: 'custom', message: '优惠券仅限零售苹果，不适用于果树认领' });
+    if (v.type === 'retail' && (!v.address || !['FAMILY', 'GIFT'].includes(v.sku)))
       c.addIssue({ code: 'custom', message: '请填写完整收件信息' });
     if (
       v.type === 'adoption' &&
@@ -65,10 +77,9 @@ export const booking = z.object({
   address,
   expected_date: z
     .string()
-    .refine(
-      (x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && x >= chinaDate(2) && x <= SEASON_END,
-      `发货日期须在两天后至 ${SEASON_END} 之间`,
-    ),
+    .refine((x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && x >= chinaDate(2) && x <= SEASON_END, {
+      error: () => `发货日期须在两天后至 ${cnMonthDay(SEASON_END)}之间`,
+    }),
   turnstile: z.string().optional(),
   payment_method: z.enum(['auto', 'alipay', 'card']).default('auto'),
 });
@@ -77,15 +88,16 @@ export const sponsor = z.object({
   event_name: z.string().trim().min(2).max(100),
   event_date: z
     .string()
-    .refine(
-      (x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && x > chinaDate(5) && x <= SEASON_END,
-      `活动须晚于今天 5 天，最晚 ${SEASON_END}`,
-    ),
+    .refine((x) => /^\d{4}-\d{2}-\d{2}$/.test(x) && x > chinaDate(5) && x <= sponsorLastDate(), {
+      error: () => `活动须晚于今天 5 天，最晚 ${cnMonthDay(sponsorLastDate())}`,
+    }),
   headcount: z
     .number()
     .int()
-    .min(SPONSOR_MIN_HEADCOUNT, `预计参加人数至少为 ${SPONSOR_MIN_HEADCOUNT} 人`)
-    .max(100000),
+    .max(100000)
+    .refine((n) => n >= SPONSOR_MIN_HEADCOUNT, {
+      error: () => `预计参加人数至少为 ${SPONSOR_MIN_HEADCOUNT} 人`,
+    }),
   contact: z.string().trim().min(1).max(30),
   phone,
   wechat: z.string().max(50).default(''),

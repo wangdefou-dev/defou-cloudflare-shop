@@ -291,3 +291,18 @@
     font-size: 21px;
   }
 }
+/* Text logo (no uploaded logo image): one column, logo and slogan left-aligned. */
+.site-footer .footer-brand:has(.brand-text-logo) {
+  grid-template-columns: auto;
+}
+.site-footer .footer-brand:has(.brand-text-logo) > span {
+  grid-column: 1;
+}
+.site-footer .footer-brand .brand-text-logo {
+  display: inline-flex;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.625rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}

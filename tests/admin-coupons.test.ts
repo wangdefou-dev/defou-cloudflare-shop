@@ -17,7 +17,7 @@ class D1 {
       .filter((f) => f.endsWith('.sql'))
       .sort())
       this.db.exec(readFileSync('migrations/' + f, 'utf8'));
-    this.db.exec(readFileSync('tests/fixtures/orchard-seed.sql', 'utf8'));
+    this.db.exec(readFileSync('scripts/seed.sql', 'utf8'));
     this.db.exec('UPDATE products SET stock=100');
   }
   prepare(sql: string) {
@@ -92,13 +92,13 @@ test('admin draft generates unique 80-bit codes, downloadable rules and an exact
     assert.match(normalizeCouponCode(c), /^TH95[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{16}$/);
   assert.match(couponListText(d), /9.5 折.*200 张/);
   assert.match(couponListText(d), /待启用/);
-  const restored = readCouponBackup(JSON.stringify({ format: 'orchard-coupons-v1', draft: d }));
+  const restored = readCouponBackup(JSON.stringify({ format: 'shop-coupons-v1', draft: d }));
   assert.equal(restored.request_id, d.request_id);
   assert.deepEqual(restored.codes, d.codes);
   for (const bad of [
     {},
-    { format: 'orchard-coupons-v1', draft: { ...d, codes: [d.codes[0], d.codes[0]] } },
-    { format: 'orchard-coupons-v1', draft: { ...d, pay_percent: 100 } },
+    { format: 'shop-coupons-v1', draft: { ...d, codes: [d.codes[0], d.codes[0]] } },
+    { format: 'shop-coupons-v1', draft: { ...d, pay_percent: 100 } },
   ])
     assert.throws(() => readCouponBackup(JSON.stringify(bad)));
   for (const args of [
